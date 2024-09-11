@@ -1,0 +1,153 @@
+# LOGSYS XC3S250ETQ144-4 DemoBoard FPGA lábkiosztás v2.0
+# A fájl az összes jelet tartlmazza, a kivezetés specifikációkat
+# inaktív, megjegyzés állapotban tartva
+# Egy adott projektben csak a ténylegesen használt jeleket aktíváljuk,
+# elkerülendõ az ERROR és WARNING üzeneteket
+
+# 16MHz órajelgenerátor
+NET "clk16M"  LOC = "P56" | TNM_NET = "tnm_clk16M";
+TIMESPEC "TS_clk16M" = PERIOD "tnm_clk16M" 16000 kHz;
+
+# Manuális RST nyomógomb (aktív magas)
+NET "rstbt"   LOC = "P41" | TIG;
+
+# LOGSYS Fejlesztõkábel GUI vezérlõ és kommunikációs jelek
+NET "dev_mosi" LOC = "P120";
+NET "dev_miso" LOC = "P143"; 
+NET "dev_clk"  LOC = "P129" | PULLDOWN; 
+#NET "dev_rst"  LOC = "P119" | PULLDOWN;
+
+# 4 darab aktív magas nyomógomb, balról jobbra számozva
+NET "bt<3>"   LOC = "P12";  
+NET "bt<2>"   LOC = "P24";  
+NET "bt<1>"   LOC = "P36";  
+NET "bt<0>"   LOC = "P38";  
+
+# 8 kapcsoló, balról jobbra számozva 
+NET "sw<7>"   LOC = "P47";
+NET "sw<6>"   LOC = "P48"; 
+NET "sw<5>"   LOC = "P69"; 
+NET "sw<4>"   LOC = "P78"; 
+NET "sw<3>"   LOC = "P84"; 
+NET "sw<2>"   LOC = "P89"; 
+NET "sw<1>"   LOC = "P95"; 
+NET "sw<0>"   LOC = "P101"; 
+
+# 8 LED, balról jobbra számozva
+NET "ld<7>"   LOC = "P43"; 
+NET "ld<6>"   LOC = "P50"; 
+NET "ld<5>"   LOC = "P51"; 
+NET "ld<4>"   LOC = "P52"; 
+NET "ld<3>"   LOC = "P53"; 
+NET "ld<2>"   LOC = "P54"; 
+NET "ld<1>"   LOC = "P58"; 
+NET "ld<0>"   LOC = "P59";   
+
+# 4 digites kijelzõ aktív ALACSONY szegmens vezérlõ jelei
+# Ugyanezeket a lábakat használjuk a 7x5 matrix kijelzõ sorainak 
+# vezérlésére is, a row<i> = seg<i>, megfeleltetéssel, 
+# ahol 0<=i<=6 és a felsõ sort jelöli a 0 index 
+                              #     --0--
+NET "seg_n<7>"  LOC = "P34";  #7   |     | 
+NET "seg_n<6>"  LOC = "P33";  #6   5     1
+NET "seg_n<5>"  LOC = "P32";  #5   |     |
+NET "seg_n<4>"  LOC = "P31";  #4    --6--
+NET "seg_n<3>"  LOC = "P21";  #3   |     |
+NET "seg_n<2>"  LOC = "P20";  #2   4     2
+NET "seg_n<1>"  LOC = "P17";  #1   |     |   
+NET "seg_n<0>"  LOC = "P16";  #0    --3--   7 <- tizedes pont
+
+# 4 digites kijelzõ aktív ALACSONY digit kiválasztó jelei, balról jobbra 
+NET "dig_n<3>"  LOC = "P22";  
+NET "dig_n<2>"  LOC = "P26";  
+NET "dig_n<1>"  LOC = "P35";  
+NET "dig_n<0>"  LOC = "P40";  
+
+# A 7x5-ös mátrix aktív ALACSONY oszlop kiválasztó jelei, balról jobbra
+NET "col_n<4>"  LOC = "P8";  
+NET "col_n<3>"  LOC = "P14";  
+NET "col_n<2>"  LOC = "P15";  
+NET "col_n<1>"  LOC = "P25";  
+NET "col_n<0>"  LOC = "P23";  
+
+# LOGSYS AIO bõvítõ csatlakozó (szembõl nézve a 20 pólusú
+# csatlakozó nem használható pontjait x-el jelölve)
+#  -------------------------------------------------------
+# |  x |ai15|aio13|aio11|aio9 |aio7 |aio5 | 3V3 |GND |  x |
+#  -------------------------------------------------------
+# |  x |ai16|aio14|aio12|aio10|aio8 |aio6 |aio4 | 5V |  x |
+#  -------------------------------------------------------
+
+NET "ai<16>"   LOC = "P141" | PULLDOWN;  #CSAK BEMENET
+NET "ai<15>"   LOC = "P6"   | PULLDOWN;  #CSAK BEMENET
+NET "aio<14>"  LOC = "P142" | PULLDOWN;
+NET "aio<13>"  LOC = "P2"   | PULLDOWN;
+NET "aio<12>"  LOC = "P140" | PULLDOWN;
+NET "aio<11>"  LOC = "P3"   | PULLDOWN;
+NET "aio<10>"  LOC = "P139" | PULLDOWN;
+NET "aio<9>"   LOC = "P4"   | PULLDOWN;
+NET "aio<8>"   LOC = "P135" | PULLDOWN;
+NET "aio<7>"   LOC = "P5"   | PULLDOWN;
+NET "aio<6>"   LOC = "P134" | PULLDOWN;
+NET "aio<5>"   LOC = "P7"   | PULLDOWN; 
+NET "aio<4>"   LOC = "P132" | PULLDOWN; 
+
+# LOGSYS BIO bõvítõ csatlakozó (szembõl nézve a 20 pólusú
+# csatlakozó nem használható pontjait x-el jelölve)
+#  -------------------------------------------------------
+# |  x |bi15|bio13|bio11|bio9 |bio7 |bio5 | 3V3 |GND |  x |
+#  -------------------------------------------------------
+# |  x |bi16|bio14|bio12|bio10|bio8 |bio6 |bio4 | 5V |  x |
+#  -------------------------------------------------------
+
+NET "bi<16>"   LOC = "P111" | PULLDOWN;  #CSAK BEMENET
+NET "bi<15>"   LOC = "P107" | PULLDOWN;  #CSAK BEMENET
+NET "bio<14>"  LOC = "P113" | PULLDOWN;
+NET "bio<13>"  LOC = "P112" | PULLDOWN;
+NET "bio<12>"  LOC = "P131" | PULLDOWN;
+NET "bio<11>"  LOC = "P130" | PULLDOWN;
+NET "bio<10>"  LOC = "P126" | PULLDOWN;
+NET "bio<9>"   LOC = "P125" | PULLDOWN;
+NET "bio<8>"   LOC = "P124" | PULLDOWN;
+NET "bio<7>"   LOC = "P123" | PULLDOWN;
+NET "bio<6>"   LOC = "P122" | PULLDOWN;
+NET "bio<5>"   LOC = "P117" | PULLDOWN;
+NET "bio<4>"   LOC = "P116" | PULLDOWN;
+
+# Soros SPI konfigurációs FLASH memória
+#NET "flash_clk"      LOC = "P71"; 
+#NET "flash_cs_n"     LOC = "P39";
+#NET "flash_mosi"     LOC = "P44";
+#NET "flash_miso"     LOC = "P63";
+
+# 1 Mbit SRAM (128k x 8 bit)
+#NET "sram_addr<16>"  LOC = "P96";
+#NET "sram_addr<15>"  LOC = "P97";
+#NET "sram_addr<14>"  LOC = "P98";
+#NET "sram_addr<13>"  LOC = "P103";
+#NET "sram_addr<12>"  LOC = "P92";
+#NET "sram_addr<11>"  LOC = "P91";
+#NET "sram_addr<10>"  LOC = "P88";
+#NET "sram_addr<9>"   LOC = "P87";
+#NET "sram_addr<8>"   LOC = "P86";
+#NET "sram_addr<7>"   LOC = "P85";
+#NET "sram_addr<6>"   LOC = "P83";
+#NET "sram_addr<5>"   LOC = "P82";
+#NET "sram_addr<4>"   LOC = "P81";
+#NET "sram_addr<3>"   LOC = "P66";
+#NET "sram_addr<2>"   LOC = "P67";
+#NET "sram_addr<1>"   LOC = "P68";
+#NET "sram_addr<0>"   LOC = "P70"; 
+
+#NET "sram_data<7>"   LOC = "P105";
+#NET "sram_data<6>"   LOC = "P106";
+#NET "sram_data<5>"   LOC = "P94";
+#NET "sram_data<4>"   LOC = "P93";
+#NET "sram_data<3>"   LOC = "P76";
+#NET "sram_data<2>"   LOC = "P75";
+#NET "sram_data<1>"   LOC = "P74";
+#NET "sram_data<0>"   LOC = "P60"; 
+
+#NET "sram_oe_n"      LOC = "P104";
+#NET "sram_we_n"      LOC = "P77";
+#NET "sram_cs_n"      LOC = "P62";
