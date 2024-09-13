@@ -3,68 +3,68 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* A processzort vezérlõ állapotgép.                                          *
+//* A processzort vezï¿½rlï¿½ ï¿½llapotgï¿½p.                                          *
 //******************************************************************************
 module controller_fsm(
-   //Órajel és reset.
-   input  wire       clk,              //Órajel
+   //ï¿½rajel ï¿½s reset.
+   input  wire       clk,              //ï¿½rajel
    input  wire       rst,              //Aszinkron reset
    
-   //A lehívott utasítással kapcsolatos jelek.
-   input  wire       addr_op2_sel,     //Az ALU 2. operandusának kiválasztása
-   input  wire [3:0] opcode,           //Az utasításban lévõ mûveleti kód
-   input  wire [3:0] ctrl_op,          //A programvezérlési mûvelet kódja
+   //A lehï¿½vott utasï¿½tï¿½ssal kapcsolatos jelek.
+   input  wire       addr_op2_sel,     //Az ALU 2. operandusï¿½nak kivï¿½lasztï¿½sa
+   input  wire [3:0] opcode,           //Az utasï¿½tï¿½sban lï¿½vï¿½ mï¿½veleti kï¿½d
+   input  wire [3:0] ctrl_op,          //A programvezï¿½rlï¿½si mï¿½velet kï¿½dja
    
-   //A processzor állapotával kapcsolatos jelek.
-   output wire       initialize,       //Inicializálás
-   output reg        fetch,            //Utasítás lehívás
-   output wire       decode,           //Utasítás dekódolás
-   output wire       interrupt,        //Megszakítás kiszolgálás
+   //A processzor ï¿½llapotï¿½val kapcsolatos jelek.
+   output wire       initialize,       //Inicializï¿½lï¿½s
+   output reg        fetch,            //Utasï¿½tï¿½s lehï¿½vï¿½s
+   output wire       decode,           //Utasï¿½tï¿½s dekï¿½dolï¿½s
+   output wire       interrupt,        //Megszakï¿½tï¿½s kiszolgï¿½lï¿½s
    
-   //A programvezérlõ utasítások végrehajtásával kapcsolatos jelek.
-   output reg        ex_jump,          //Ugrás végrehajtása
-   output wire       ex_call,          //Szubrutinhívás végrehajtása
-   output wire       ex_ret_sub,       //Visszatérés szubrutinból
-   output wire       ex_ret_int,       //Visszatérés megszakításból
+   //A programvezï¿½rlï¿½ utasï¿½tï¿½sok vï¿½grehajtï¿½sï¿½val kapcsolatos jelek.
+   output reg        ex_jump,          //Ugrï¿½s vï¿½grehajtï¿½sa
+   output wire       ex_call,          //Szubrutinhï¿½vï¿½s vï¿½grehajtï¿½sa
+   output wire       ex_ret_sub,       //Visszatï¿½rï¿½s szubrutinbï¿½l
+   output wire       ex_ret_int,       //Visszatï¿½rï¿½s megszakï¿½tï¿½sbï¿½l
    
-   //Az adatstruktúrával kapcsolatos jelek.
-   output wire       wr_data_sel,      //A regiszterbe írandó adat kiválasztása
-   output reg        reg_wr_en,        //A regisztertömb írás engedélyezõ jele
-   output reg  [1:0] alu_op_type,      //ALU mûvelet kiválasztó jel
+   //Az adatstruktï¿½rï¿½val kapcsolatos jelek.
+   output wire       wr_data_sel,      //A regiszterbe ï¿½randï¿½ adat kivï¿½lasztï¿½sa
+   output reg        reg_wr_en,        //A regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   output reg  [1:0] alu_op_type,      //ALU mï¿½velet kivï¿½lasztï¿½ jel
    input  wire       alu_flag_z,       //Zero flag
    input  wire       alu_flag_c,       //Carry flag
    input  wire       alu_flag_n,       //Negative flag
    input  wire       alu_flag_v,       //Overflow flag
    
-   //Az adatmemóriával kapcsolatos jelek.
-   output wire       bus_req,          //Busz hozzáférés kérése
-   input  wire       bus_grant,        //Busz hozzáférés megadása
-   output wire       data_mem_wr,      //Írás engedélyezõ jel
-   output wire       data_mem_rd,      //Olvasás engedélyezõ jel
+   //Az adatmemï¿½riï¿½val kapcsolatos jelek.
+   output wire       bus_req,          //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   input  wire       bus_grant,        //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
+   output wire       data_mem_wr,      //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   output wire       data_mem_rd,      //Olvasï¿½s engedï¿½lyezï¿½ jel
    
-   //A megszakítással kapcsolatos jelek.
-   input  wire       irq,              //Megszakításkérõ bemenet
-   input  wire       flag_ie_din,      //Az IE flag-ba írandó érték
-   output reg        flag_ie,          //Megyszakítás engedélyezõ flag (IE)
-   input  wire       flag_if_din,      //Az IF flag-ba írandó érték
-   output reg        flag_if,          //Megyszakítás flag (IF)
+   //A megszakï¿½tï¿½ssal kapcsolatos jelek.
+   input  wire       irq,              //Megszakï¿½tï¿½skï¿½rï¿½ bemenet
+   input  wire       flag_ie_din,      //Az IE flag-ba ï¿½randï¿½ ï¿½rtï¿½k
+   output reg        flag_ie,          //Megyszakï¿½tï¿½s engedï¿½lyezï¿½ flag (IE)
+   input  wire       flag_if_din,      //Az IF flag-ba ï¿½randï¿½ ï¿½rtï¿½k
+   output reg        flag_if,          //Megyszakï¿½tï¿½s flag (IF)
    
-   //A debug interfész jelei.
-   input  wire       dbg_break,        //Program végrehajtásának felfüggesztése
-   input  wire       dbg_continue,     //Program végrehajtásának folytatása
-   input  wire       dbg_ie_wr,        //Az IE flag írás engedélyezõ jele
-   input  wire       dbg_ie_din,       //Az IE bitbe írandó adat
-   input  wire       dbg_reg_wr,       //A regisztertömb írás engedélyezõ jele
-   input  wire       dbg_mem_wr,       //Az adatmemória írás engedélyezõ jele
-   input  wire       dbg_mem_rd,       //Az adatmemória olvasás engedélyezõ jele
-   output wire       dbg_is_brk        //A töréspont állapot jelzése
+   //A debug interfï¿½sz jelei.
+   input  wire       dbg_break,        //Program vï¿½grehajtï¿½sï¿½nak felfï¿½ggesztï¿½se
+   input  wire       dbg_continue,     //Program vï¿½grehajtï¿½sï¿½nak folytatï¿½sa
+   input  wire       dbg_ie_wr,        //Az IE flag ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire       dbg_ie_din,       //Az IE bitbe ï¿½randï¿½ adat
+   input  wire       dbg_reg_wr,       //A regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire       dbg_mem_wr,       //Az adatmemï¿½ria ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire       dbg_mem_rd,       //Az adatmemï¿½ria olvasï¿½s engedï¿½lyezï¿½ jele
+   output wire       dbg_is_brk        //A tï¿½rï¿½spont ï¿½llapot jelzï¿½se
 );
 
 `include "src\MiniRISC_CPU\control_defs.vh"
 `include "src\MiniRISC_CPU\opcode_defs.vh"
 
 //******************************************************************************
-//* Megyszakítás engedélyezõ flag (IE).                                        *
+//* Megyszakï¿½tï¿½s engedï¿½lyezï¿½ flag (IE).                                        *
 //******************************************************************************
 wire ie_clr;
 wire ie_set;
@@ -86,7 +86,7 @@ end
 
 
 //******************************************************************************
-//* Megyszakítás flag (IF). A megszakítás kiszolgálását jelzi.                 *
+//* Megyszakï¿½tï¿½s flag (IF). A megszakï¿½tï¿½s kiszolgï¿½lï¿½sï¿½t jelzi.                 *
 //******************************************************************************
 always @(posedge clk)
 begin
@@ -102,23 +102,24 @@ end
 
 
 //******************************************************************************
-//* A vezérlõ állapotgép.                                                      *
+//* A vezï¿½rlï¿½ ï¿½llapotgï¿½p.                                                      *
 //******************************************************************************
-localparam STATE_INIT     = 4'd0;   //Inicializálás
-localparam STATE_FETCH    = 4'd1;   //Utasítás lehívás
-localparam STATE_DECODE   = 4'd2;   //Utasítás dekódolás
-localparam STATE_EX_LD    = 4'd3;   //Utasítás végrehajtás (memória olvasás)
-localparam STATE_EX_ST    = 4'd4;   //Utasítás végrehajtás (memória írás)
-localparam STATE_EX_MOV   = 4'd5;   //Utasítás végrehajtás (adatmozgatás)
-localparam STATE_EX_ARITH = 4'd6;   //Utasítás végrehajtás (aritmetikai)
-localparam STATE_EX_LOGIC = 4'd7;   //Utasítás végrehajtás (logikai/csere)
-localparam STATE_EX_SHIFT = 4'd8;   //Utasítás végrehajtás (shiftelés/forgatás)
-localparam STATE_EX_CTRL  = 4'd9;   //Utasítás végrehajtás (programvezérlés)
-localparam STATE_EX_NOP   = 4'd10;  //Utasítás végrehajtás (nincs mûveletvégzés)
-localparam STATE_INT_REQ  = 4'd11;  //Megszakításkérés kezelése
-localparam STATE_BREAK    = 4'd12;  //Töréspont
+localparam STATE_INIT     = 4'd0;   //Inicializï¿½lï¿½s
+localparam STATE_FETCH    = 4'd1;   //Utasï¿½tï¿½s lehï¿½vï¿½s
+localparam STATE_DECODE   = 4'd2;   //Utasï¿½tï¿½s dekï¿½dolï¿½s
+localparam STATE_EX_LD    = 4'd3;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (memï¿½ria olvasï¿½s)
+localparam STATE_EX_ST    = 4'd4;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (memï¿½ria ï¿½rï¿½s)
+localparam STATE_EX_MOV   = 4'd5;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (adatmozgatï¿½s)
+localparam STATE_EX_ARITH = 4'd6;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (aritmetikai)
+localparam STATE_EX_LOGIC = 4'd7;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (logikai/csere)
+localparam STATE_EX_SHIFT = 4'd8;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (shiftelï¿½s/forgatï¿½s)
+localparam STATE_EX_CTRL  = 4'd9;   //Utasï¿½tï¿½s vï¿½grehajtï¿½s (programvezï¿½rlï¿½s)
+localparam STATE_EX_CTRL_NO_DATA = 4'd13;
+localparam STATE_EX_NOP   = 4'd10;  //Utasï¿½tï¿½s vï¿½grehajtï¿½s (nincs mï¿½veletvï¿½gzï¿½s)
+localparam STATE_INT_REQ  = 4'd11;  //Megszakï¿½tï¿½skï¿½rï¿½s kezelï¿½se
+localparam STATE_BREAK    = 4'd12;  //Tï¿½rï¿½spont
 
-//Az aktuális állapotot tároló regiszter.
+//Az aktuï¿½lis ï¿½llapotot tï¿½rolï¿½ regiszter.
 reg [3:0] state;
 
 always @(posedge clk or posedge rst)
@@ -127,53 +128,56 @@ begin
       state <= STATE_INIT;
    else
       case (state)
-         //Inicializálás.
+         //Inicializï¿½lï¿½s.
          STATE_INIT    : state <= STATE_FETCH;
          
-         //Utasítás lehívás.
+         //Utasï¿½tï¿½s lehï¿½vï¿½s.
          STATE_FETCH   : if (dbg_break)
                             state <= STATE_BREAK;
                          else
                             state <= STATE_DECODE;
          
-         //Utasítás dekódolás.
+         //Utasï¿½tï¿½s dekï¿½dolï¿½s.
          STATE_DECODE  : case (opcode)
-                            //Adatmemória olvasás.
+                            //Adatmemï¿½ria olvasï¿½s.
                             OPCODE_LD   : state <= STATE_EX_LD;
                             
-                            //Adatmemória írás.
+                            //Adatmemï¿½ria ï¿½rï¿½s.
                             OPCODE_ST   : state <= STATE_EX_ST;
                             
-                            //Adatmozgatás vagy konstans betöltés.
+                            //Adatmozgatï¿½s vagy konstans betï¿½ltï¿½s.
                             OPCODE_MOV  : state <= STATE_EX_MOV;
                             
-                            //Aritmetikai mûveletek.
+                            //Aritmetikai mï¿½veletek.
                             OPCODE_ADD  : state <= STATE_EX_ARITH;
                             OPCODE_ADC  : state <= STATE_EX_ARITH;
                             OPCODE_SUB  : state <= STATE_EX_ARITH;
                             OPCODE_SBC  : state <= STATE_EX_ARITH;
                             OPCODE_CMP  : state <= STATE_EX_ARITH;
                             
-                            //Logikai mûveletek.
+                            //Logikai mï¿½veletek.
                             OPCODE_AND  : state <= STATE_EX_LOGIC;
                             OPCODE_OR   : state <= STATE_EX_LOGIC;
                             OPCODE_XOR  : state <= STATE_EX_LOGIC;
                             OPCODE_TST  : state <= STATE_EX_LOGIC;
                             
-                            //Shiftelés/forgatás vagy csere.
+                            //Shiftelï¿½s/forgatï¿½s vagy csere.
                             OPCODE_SHIFT: if (addr_op2_sel)
                                              state <= STATE_EX_SHIFT;
                                           else
                                              state <= STATE_EX_LOGIC;
                             
-                            //Programvezérlés.
+                            //Programvezï¿½rlï¿½s.
                             OPCODE_CTRL : state <= STATE_EX_CTRL;
-                            
-                            //Nincs mûveletvégzés.
+
+                            //Pragram allitas
+                            OPCODE_CTRL_NO_DATA : state <= STATE_EX_CTRL_NO_DATA;
+
+                            //Nincs mï¿½veletvï¿½gzï¿½s.
                             default     : state <= STATE_EX_NOP;
                          endcase
          
-         //Utasítás végrehajtás.
+         //Utasï¿½tï¿½s vï¿½grehajtï¿½s.
          STATE_EX_LD   : if (bus_grant)
                             if (flag_ie && irq)
                                state <= STATE_INT_REQ;
@@ -214,34 +218,39 @@ begin
                             state <= STATE_INT_REQ;
                          else
                             state <= STATE_FETCH;
+
+         STATE_EX_CTRL_NO_DATA : if (flag_ie && irq)
+                            state <= STATE_INT_REQ;
+                         else
+                            state <= STATE_FETCH;
          
          STATE_EX_NOP  : if (flag_ie && irq)
                             state <= STATE_INT_REQ;
                          else
                             state <= STATE_FETCH;
                             
-         //Megszakításkérés kezelése.
+         //Megszakï¿½tï¿½skï¿½rï¿½s kezelï¿½se.
          STATE_INT_REQ : state <= STATE_FETCH;
          
-         //Töréspont.
+         //Tï¿½rï¿½spont.
          STATE_BREAK   : if (dbg_continue)
                             state <= STATE_DECODE;
                          else
                             state <= STATE_BREAK;
                             
-         //Érvénytelen állapotok.
+         //ï¿½rvï¿½nytelen ï¿½llapotok.
          default       : state <= STATE_INIT;
       endcase
 end
 
 
 //******************************************************************************
-//* A processzor állapotával kapcsolatos jelek.                                *
+//* A processzor ï¿½llapotï¿½val kapcsolatos jelek.                                *
 //******************************************************************************
-//Inicializálás.
+//Inicializï¿½lï¿½s.
 assign initialize = (state == STATE_INIT);
 
-//Utasítás lehívás.
+//Utasï¿½tï¿½s lehï¿½vï¿½s.
 always @(*)
 begin
    case (state)
@@ -251,20 +260,20 @@ begin
    endcase
 end
 
-//Utasítás dekódolás.
+//Utasï¿½tï¿½s dekï¿½dolï¿½s.
 assign decode     = (state == STATE_DECODE);
 
-//Megszakítás kiszolgálása.
+//Megszakï¿½tï¿½s kiszolgï¿½lï¿½sa.
 assign interrupt  = (state == STATE_INT_REQ);
 
-//Töréspont.
+//Tï¿½rï¿½spont.
 assign dbg_is_brk = (state == STATE_BREAK);
 
 
 //******************************************************************************
-//* A programvezérlõ utasításokkal kapcsolatos jelek.                          *
+//* A programvezï¿½rlï¿½ utasï¿½tï¿½sokkal kapcsolatos jelek.                          *
 //******************************************************************************
-//Feltétel nélküli és feltételes ugrás jelzése.
+//Feltï¿½tel nï¿½lkï¿½li ï¿½s feltï¿½teles ugrï¿½s jelzï¿½se.
 always @(*)
 begin
    if (state == STATE_EX_CTRL)
@@ -278,35 +287,41 @@ begin
          CTRL_JNN: ex_jump <= ~alu_flag_n;
          CTRL_JV : ex_jump <= alu_flag_v;
          CTRL_JNV: ex_jump <= ~alu_flag_v;
+         CTRL_JL : ex_jump <= (alu_flag_n != alu_flag_v);
+         CTRL_JLE: ex_jump <= ((alu_flag_z == 1) || (alu_flag_n != alu_flag_v));
+         CTRL_JH : ex_jump <= ((alu_flag_z == 0) || (alu_flag_n == alu_flag_v));
+         CTRL_JHE: ex_jump <= (alu_flag_n == alu_flag_v);
+         CTRL_JSE: ex_jump <= ((alu_flag_z == 1) || (alu_flag_c == 1));
+         CTRL_JG : ex_jump <= ((alu_flag_z == 0) || (alu_flag_c == 0));
          default : ex_jump <= 1'b0;
       endcase
    else
       ex_jump <= 1'b0;
 end
 
-//Szubrutinhívás jelzése.
+//Szubrutinhï¿½vï¿½s jelzï¿½se.
 assign ex_call    = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_JSR);
 
-//Visszatérés szubrutinból.
-assign ex_ret_sub = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_RTS);
+//Visszatï¿½rï¿½s szubrutinbï¿½l.
+assign ex_ret_sub = (state == STATE_EX_CTRL_NO_DATA) & (ctrl_op == CTRL_RTS);
 
-//Visszatérés megszakításból.
-assign ex_ret_int = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_RTI);
+//Visszatï¿½rï¿½s megszakï¿½tï¿½sbï¿½l.
+assign ex_ret_int = (state == STATE_EX_CTRL_NO_DATA) & (ctrl_op == CTRL_RTI);
 
-//A megszakítás engedélyezõ flag vezérlõ jelei.
-assign ie_set     = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_STI);
-assign ie_clr     = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_CLI);
+//A megszakï¿½tï¿½s engedï¿½lyezï¿½ flag vezï¿½rlï¿½ jelei.
+assign ie_set     = (state == STATE_EX_CTRL_NO_DATA) & (ctrl_op == CTRL_STI);
+assign ie_clr     = (state == STATE_EX_CTRL_NO_DATA) & (ctrl_op == CTRL_CLI);
 
 
 //******************************************************************************
-//* Az adatstruktúra vezérlõ jelei.                                            *
+//* Az adatstruktï¿½ra vezï¿½rlï¿½ jelei.                                            *
 //******************************************************************************
-//A regiszertömbbe írandó adat kiválasztó jele:
-//0: ALU mûvelet eredménye
-//1: az adatmemóriából olvasott adat
+//A regiszertï¿½mbbe ï¿½randï¿½ adat kivï¿½lasztï¿½ jele:
+//0: ALU mï¿½velet eredmï¿½nye
+//1: az adatmemï¿½riï¿½bï¿½l olvasott adat
 assign wr_data_sel = (state == STATE_EX_LD);
 
-//Regisztertömb írás engedélyezõ jel.
+//Regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jel.
 always @(*)
 begin
    case (state)
@@ -320,7 +335,7 @@ begin
    endcase
 end
    
-//ALU mûvelet kiválaszó jel.
+//ALU mï¿½velet kivï¿½laszï¿½ jel.
 always @(*)
 begin
    case (state)
@@ -333,15 +348,15 @@ end
 
 
 //******************************************************************************
-//* Az adatmemóriával kapcsolatos jelek.                                       *
+//* Az adatmemï¿½riï¿½val kapcsolatos jelek.                                       *
 //******************************************************************************
-//Az adatmemória írás engedélyezõ jele.
+//Az adatmemï¿½ria ï¿½rï¿½s engedï¿½lyezï¿½ jele.
 assign data_mem_wr = (dbg_is_brk) ? dbg_mem_wr : (state == STATE_EX_ST);
 
-//Az adatmemória olvasás engedélyezõ jele.
+//Az adatmemï¿½ria olvasï¿½s engedï¿½lyezï¿½ jele.
 assign data_mem_rd = (dbg_is_brk) ? dbg_mem_rd : (state == STATE_EX_LD);
 
-//Busz hozzáférés kérése.
+//Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se.
 assign bus_req     = data_mem_wr | data_mem_rd;
 
    
