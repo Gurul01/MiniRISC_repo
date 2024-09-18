@@ -3,139 +3,141 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* A processzor adatstruktúráját vezérlõ egység.                              *
+//* A processzor adatstruktï¿½rï¿½jï¿½t vezï¿½rlï¿½ egysï¿½g.                              *
 //******************************************************************************
 module control_unit(
-   //Órajel és reset.
-   input  wire        clk,             //Órajel
+   //ï¿½rajel ï¿½s reset.
+   input  wire        clk,             //ï¿½rajel
    input  wire        rst,             //Aszinkron reset
    
-   //A programmemóriával kapcsolatos jelek.
-   output wire [7:0]  prg_mem_addr,    //Címbusz
-   input  wire [15:0] prg_mem_din,     //Olvasási adatbusz
+   //A programmemï¿½riï¿½val kapcsolatos jelek.
+   output wire [7:0]  prg_mem_addr,    //Cï¿½mbusz
+   input  wire [15:0] prg_mem_din,     //Olvasï¿½si adatbusz
    
-   //Az adatmemóriával kapcsolatos jelek.
-   output wire        bus_req,         //Busz hozzáférés kérése
-   input  wire        bus_grant,       //Busz hozzáférés megadása
-   output wire        data_mem_wr,     //Írás engedélyezõ jel
-   output wire        data_mem_rd,     //Olvasás engedélyezõ jel
+   //Az adatmemï¿½riï¿½val kapcsolatos jelek.
+   output wire        bus_req,         //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   input  wire        bus_grant,       //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
+   output wire        data_mem_wr,     //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   output wire        data_mem_rd,     //Olvasï¿½s engedï¿½lyezï¿½ jel
    
-   //Az utasításban lévõ konstans adat.
+   //Az utasï¿½tï¿½sban lï¿½vï¿½ konstans adat.
    output wire [7:0]  const_data,
    
-   //Az adatstruktúra multiplexereinek vezérlõ jelei.
-   output wire        wr_data_sel,     //A regiszterbe írandó adat kiválasztása
-   output wire        addr_op2_sel,    //Az ALU 2. operandusának kiválasztása
+   //Az adatstruktï¿½ra multiplexereinek vezï¿½rlï¿½ jelei.
+   output wire        wr_data_sel,     //A regiszterbe ï¿½randï¿½ adat kivï¿½lasztï¿½sa
+   output wire        addr_op2_sel,    //Az ALU 2. operandusï¿½nak kivï¿½lasztï¿½sa
    
-   //A regisztertömbbel kapcsolatos jelek.
-   output wire        reg_wr_en,       //Írás engedélyezõ jel
-   output wire [3:0]  reg_addr_x,      //Regiszter címe (X port)
-   output wire [3:0]  reg_addr_y,      //Regiszter címe (Y port)
+   //A regisztertï¿½mbbel kapcsolatos jelek.
+   output wire        reg_wr_en,       //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   output wire [3:0]  reg_addr_x,      //Regiszter cï¿½me (X port)
+   output wire [3:0]  reg_addr_y,      //Regiszter cï¿½me (Y port)
    
    //Az ALU-val kapcsolatos jelek.
-   output wire [1:0]  alu_op_type,     //ALU mûvelet kiválasztó jel
-   output wire [1:0]  alu_arith_sel,   //Aritmetikai mûvelet kiválasztó jel
-   output wire [1:0]  alu_logic_sel,   //Logikai mûvelet kiválasztó jel
-   output wire [3:0]  alu_shift_sel,   //Shiftelési mûvelet kiválasztó jel
-   output wire [3:0]  alu_flag_din,    //A flag-ekbe írandó érték
-   output wire        alu_flag_wr,     //A flag-ek írás engedélyezõ jele
+   output wire [1:0]  alu_op_type,     //ALU mï¿½velet kivï¿½lasztï¿½ jel
+   output wire [1:0]  alu_arith_sel,   //Aritmetikai mï¿½velet kivï¿½lasztï¿½ jel
+   output wire [1:0]  alu_logic_sel,   //Logikai mï¿½velet kivï¿½lasztï¿½ jel
+   output wire [3:0]  alu_shift_sel,   //Shiftelï¿½si mï¿½velet kivï¿½lasztï¿½ jel
+   output wire [3:0]  alu_flag_din,    //A flag-ekbe ï¿½randï¿½ ï¿½rtï¿½k
+   output wire        alu_flag_wr,     //A flag-ek ï¿½rï¿½s engedï¿½lyezï¿½ jele
    input  wire        alu_flag_z,      //Zero flag
    input  wire        alu_flag_c,      //Carry flag
    input  wire        alu_flag_n,      //Negative flag
    input  wire        alu_flag_v,      //Overflow flag
    
-   //Ugrási cím az adatstruktúrától.
+   //Ugrï¿½si cï¿½m az adatstruktï¿½rï¿½tï¿½l.
    input  wire [7:0]  jump_addr,
+
+   input  wire [7:0]  SP;
    
-   //Megszakításkérõ bemenet (aktív magas szintérzékeny).
+   //Megszakï¿½tï¿½skï¿½rï¿½ bemenet (aktï¿½v magas szintï¿½rzï¿½keny).
    input  wire        irq,
    
-   //A debug interfész jelei.
+   //A debug interfï¿½sz jelei.
    input  wire [7:0]  dbg_data_in,     //Adatbemenet
-   input  wire        dbg_break,       //Program végrehajtásának felfüggesztése
-   input  wire        dbg_continue,    //Program végrehajtásának folytatása
-   input  wire        dbg_pc_wr,       //A programszámláló írás engedélyezõ jele
-   input  wire        dbg_flag_wr,     //A flag-ek írás engedélyezõ jele
-   input  wire        dbg_reg_wr,      //A regisztertömb írás engedélyezõ jele
-   input  wire        dbg_mem_wr,      //Az adatmemória írás engedélyezõ jele
-   input  wire        dbg_mem_rd,      //Az adatmemória olvasás engedélyezõ jele
-   output wire        dbg_instr_dec,   //Az utasítás dekódolás jelzése
-   output wire        dbg_int_req,     //A megszakítás kiszolgálásának jelzése
-   output wire        dbg_is_brk,      //A töréspont állapot jelzése
-   output wire        dbg_flag_ie,     //Megyszakítás engedélyezõ flag (IE)
-   output wire        dbg_flag_if,     //Megyszakítás flag (IF)
-   output wire [13:0] dbg_stack_top    //A verem tetején lévõ adat
+   input  wire        dbg_break,       //Program vï¿½grehajtï¿½sï¿½nak felfï¿½ggesztï¿½se
+   input  wire        dbg_continue,    //Program vï¿½grehajtï¿½sï¿½nak folytatï¿½sa
+   input  wire        dbg_pc_wr,       //A programszï¿½mlï¿½lï¿½ ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire        dbg_flag_wr,     //A flag-ek ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire        dbg_reg_wr,      //A regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire        dbg_mem_wr,      //Az adatmemï¿½ria ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   input  wire        dbg_mem_rd,      //Az adatmemï¿½ria olvasï¿½s engedï¿½lyezï¿½ jele
+   output wire        dbg_instr_dec,   //Az utasï¿½tï¿½s dekï¿½dolï¿½s jelzï¿½se
+   output wire        dbg_int_req,     //A megszakï¿½tï¿½s kiszolgï¿½lï¿½sï¿½nak jelzï¿½se
+   output wire        dbg_is_brk,      //A tï¿½rï¿½spont ï¿½llapot jelzï¿½se
+   output wire        dbg_flag_ie,     //Megyszakï¿½tï¿½s engedï¿½lyezï¿½ flag (IE)
+   output wire        dbg_flag_if,     //Megyszakï¿½tï¿½s flag (IF)
+   output wire [13:0] dbg_stack_top    //A verem tetejï¿½n lï¿½vï¿½ adat
 );
 
 `include "src\MiniRISC_CPU\control_defs.vh"
 `include "src\MiniRISC_CPU\opcode_defs.vh"
 
 //******************************************************************************
-//* Vezérlõ jelek.                                                             *
+//* Vezï¿½rlï¿½ jelek.                                                             *
 //******************************************************************************
-wire initialize;                       //Inicializálás
-wire fetch;                            //Utasítás lehívás
-wire ex_jump;                          //Ugrás végrehajtása
-wire ex_call;                          //Szubrutinhívás végrehajtása
-wire ex_ret_sub;                       //Visszatérés szubrutinból
-wire ex_ret_int;                       //Visszatérés megszakításból
+wire initialize;                       //Inicializï¿½lï¿½s
+wire fetch;                            //Utasï¿½tï¿½s lehï¿½vï¿½s
+wire ex_jump;                          //Ugrï¿½s vï¿½grehajtï¿½sa
+wire ex_call;                          //Szubrutinhï¿½vï¿½s vï¿½grehajtï¿½sa
+wire ex_ret_sub;                       //Visszatï¿½rï¿½s szubrutinbï¿½l
+wire ex_ret_int;                       //Visszatï¿½rï¿½s megszakï¿½tï¿½sbï¿½l
 
 
 //******************************************************************************
-//* Programszámláló (PC). A lehívandó utasítás címét tárolja.                  *
+//* Programszï¿½mlï¿½lï¿½ (PC). A lehï¿½vandï¿½ utasï¿½tï¿½s cï¿½mï¿½t tï¿½rolja.                  *
 //******************************************************************************
-reg  [7:0] pc;                         //Programszámláló regiszter
-wire [7:0] return_addr;                //Visszatérési cím
+reg  [7:0] pc;                         //Programszï¿½mlï¿½lï¿½ regiszter
+wire [7:0] return_addr;                //Visszatï¿½rï¿½si cï¿½m
 
 always @(posedge clk)
 begin
    if (initialize)
-      pc <= RST_VECTOR;                //A reset vektor betöltése
+      pc <= RST_VECTOR;                //A reset vektor betï¿½ltï¿½se
    else
       if (dbg_int_req)
-         pc <= INT_VECTOR;             //A megszakítás vektor betöltése
+         pc <= INT_VECTOR;             //A megszakï¿½tï¿½s vektor betï¿½ltï¿½se
       else
          if (dbg_is_brk && dbg_pc_wr)
-            pc <= dbg_data_in;         //A debug modul írja a programszámlálót
+            pc <= dbg_data_in;         //A debug modul ï¿½rja a programszï¿½mlï¿½lï¿½t
          else
             if (ex_jump || ex_call)
-               pc <= jump_addr;        //Az ugrási cím betöltése
+               pc <= jump_addr;        //Az ugrï¿½si cï¿½m betï¿½ltï¿½se
             else
                if (ex_ret_sub || ex_ret_int)
-                  pc <= return_addr;   //A visszatérési cím betöltése
+                  pc <= return_addr;   //A visszatï¿½rï¿½si cï¿½m betï¿½ltï¿½se
                else
                   if (fetch)
-                     pc <= pc + 8'd1;  //A programszámláló növelése
+                     pc <= pc + 8'd1;  //A programszï¿½mlï¿½lï¿½ nï¿½velï¿½se
 end
 
-//A programmemória címbuszának meghajtása.
+//A programmemï¿½ria cï¿½mbuszï¿½nak meghajtï¿½sa.
 assign prg_mem_addr = pc;
 
 
 //******************************************************************************
-//* Verem. Szubrutinhívás és megszakításkérés esetén ide mentõdik el a         *
-//* programszámláló, valamint a flag-ek értéke.                                *
+//* Verem. Szubrutinhï¿½vï¿½s ï¿½s megszakï¿½tï¿½skï¿½rï¿½s esetï¿½n ide mentï¿½dik el a         *
+//* programszï¿½mlï¿½lï¿½, valamint a flag-ek ï¿½rtï¿½ke.                                *
 //******************************************************************************
-wire [13:0] stack_din;                 //A verembe írandó adat
-wire [13:0] stack_dout;                //A verem tetején lévõ adat
+wire [13:0] stack_din;                 //A verembe ï¿½randï¿½ adat
+wire [13:0] stack_dout;                //A verem tetejï¿½n lï¿½vï¿½ adat
 
 stack #(
-   //Az adat szélessége bitekben.
+   //Az adat szï¿½lessï¿½ge bitekben.
    .DATA_WIDTH(14)
 ) stack (
-   //Órajel.
+   //ï¿½rajel.
    .clk(clk),
    
    //Adatvonalak.
-   .data_in(stack_din),                //A verembe írandó adat
-   .data_out(stack_dout),              //A verem tetején lévõ adat
+   .data_in(stack_din),                //A verembe ï¿½randï¿½ adat
+   .data_out(stack_dout),              //A verem tetejï¿½n lï¿½vï¿½ adat
    
-   //Vezérlõ bemenetek.
-   .push(dbg_int_req | ex_call),       //Adat írása a verembe
-   .pop(ex_ret_sub | ex_ret_int)       //Adat olvasása a verembõl
+   //Vezï¿½rlï¿½ bemenetek.
+   .push(dbg_int_req | ex_call),       //Adat ï¿½rï¿½sa a verembe
+   .pop(ex_ret_sub | ex_ret_int)       //Adat olvasï¿½sa a verembï¿½l
 );
 
-//A verembe elmentjük a programszámlálót és az ALU flag-eket.
+//A verembe elmentjï¿½k a programszï¿½mlï¿½lï¿½t ï¿½s az ALU flag-eket.
 assign stack_din[7:0] = pc;
 assign stack_din[8]   = alu_flag_z;
 assign stack_din[9]   = alu_flag_c;
@@ -144,22 +146,22 @@ assign stack_din[11]  = alu_flag_v;
 assign stack_din[12]  = dbg_flag_ie;
 assign stack_din[13]  = dbg_flag_if;
 
-//A visszatérési cím.
+//A visszatï¿½rï¿½si cï¿½m.
 assign return_addr    = stack_dout[7:0];
 
-//Az ALU flag-ekkel kapcsolatos jelek. Break állapotban a debug
-//modul írhatja a flag-eket, egyébként pedig a verembe elmentett
-//értékek állíthatók vissza.
+//Az ALU flag-ekkel kapcsolatos jelek. Break ï¿½llapotban a debug
+//modul ï¿½rhatja a flag-eket, egyï¿½bkï¿½nt pedig a verembe elmentett
+//ï¿½rtï¿½kek ï¿½llï¿½thatï¿½k vissza.
 assign alu_flag_wr    = (dbg_is_brk) ? dbg_flag_wr      : ex_ret_int;
 assign alu_flag_din   = (dbg_is_brk) ? dbg_data_in[3:0] : stack_dout[11:8];
 
-//A verem tetején lévõ adat.
+//A verem tetejï¿½n lï¿½vï¿½ adat.
 assign dbg_stack_top  = stack_dout;
 
 
 //******************************************************************************
-//* Utasításregiszter. A programmemóriából lehívott utasítást tárolja.         *
-//* Az utasítások formátumát lásd az 'opcode_defs.vh' fájlban.                 *
+//* Utasï¿½tï¿½sregiszter. A programmemï¿½riï¿½bï¿½l lehï¿½vott utasï¿½tï¿½st tï¿½rolja.         *
+//* Az utasï¿½tï¿½sok formï¿½tumï¿½t lï¿½sd az 'opcode_defs.vh' fï¿½jlban.                 *
 //******************************************************************************
 reg [15:0] ir;
 
@@ -169,86 +171,89 @@ begin
       ir <= prg_mem_din;
 end
 
-//Az ALU második operandusának kiválaszó jele:
-//0: konstans  / abszolút címzés
-//1: regiszter / indirekt címzés
+//Az ALU mï¿½sodik operandusï¿½nak kivï¿½laszï¿½ jele:
+//0: konstans  / abszolï¿½t cï¿½mzï¿½s
+//1: regiszter / indirekt cï¿½mzï¿½s
 assign addr_op2_sel  = (ir[15:12] == REG_OP_PREFIX);
 
-//Az utasításban tárolt mûveleti kód.
+//Az utasï¿½tï¿½sban tï¿½rolt mï¿½veleti kï¿½d.
 wire [3:0] opcode    = (addr_op2_sel) ? ir[7:4] : ir[15:12];
 
-//A regiszterek címei.
+//A regiszterek cï¿½mei.
 assign reg_addr_x    = ir[11:8];
 assign reg_addr_y    = ir[3:0];
 
-//Az utasításban lévõ konstans adat.
-assign const_data    = ir[7:0];
+//Az utasï¿½tï¿½sban lï¿½vï¿½ konstans adat.
+//Ha adatmemoriat irunk vagy olvasunk akkor SP relativen cimzunk.
+//0: data_mem_wr || data_mem_rd -> Az utolso 8 bit a konstans adat
+//1: data_mem_wr || data_mem_rd -> SP relativ cimzes
+assign const_data    = (data_mem_wr || data_mem_rd) ? (ir[7:0] + SP) : (ir[7:0]);
 
-//Az ALU mûveletek kiválasztó jelei.
+//Az ALU mï¿½veletek kivï¿½lasztï¿½ jelei.
 assign alu_arith_sel = opcode[1:0];
 assign alu_logic_sel = opcode[1:0];
 assign alu_shift_sel = ir[3:0];
 
-//A programvezérlési mûvelet kódja.
+//A programvezï¿½rlï¿½si mï¿½velet kï¿½dja.
 wire [3:0] ctrl_op   = ir[11:8];
 
 
 //******************************************************************************
-//* A processzort vezérlõ állapotgép.                                          *
+//* A processzort vezï¿½rlï¿½ ï¿½llapotgï¿½p.                                          *
 //******************************************************************************
 controller_fsm controller_fsm(
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Aszinkron reset
    
-   //A lehívott utasítással kapcsolatos jelek.
-   .addr_op2_sel(addr_op2_sel),        //Az ALU 2. operandusának kiválasztása
-   .opcode(opcode),                    //Az utasításban lévõ mûveleti kód
-   .ctrl_op(ctrl_op),                  //A programvezérlési mûvelet kódja
+   //A lehï¿½vott utasï¿½tï¿½ssal kapcsolatos jelek.
+   .addr_op2_sel(addr_op2_sel),        //Az ALU 2. operandusï¿½nak kivï¿½lasztï¿½sa
+   .opcode(opcode),                    //Az utasï¿½tï¿½sban lï¿½vï¿½ mï¿½veleti kï¿½d
+   .ctrl_op(ctrl_op),                  //A programvezï¿½rlï¿½si mï¿½velet kï¿½dja
    
-   //A processzor állapotával kapcsolatos jelek.
-   .initialize(initialize),            //Inicializálás
-   .fetch(fetch),                      //Utasítás lehívás
-   .decode(dbg_instr_dec),             //Utasítás dekódolás
-   .interrupt(dbg_int_req),            //Megszakítás kiszolgálás
+   //A processzor ï¿½llapotï¿½val kapcsolatos jelek.
+   .initialize(initialize),            //Inicializï¿½lï¿½s
+   .fetch(fetch),                      //Utasï¿½tï¿½s lehï¿½vï¿½s
+   .decode(dbg_instr_dec),             //Utasï¿½tï¿½s dekï¿½dolï¿½s
+   .interrupt(dbg_int_req),            //Megszakï¿½tï¿½s kiszolgï¿½lï¿½s
    
-   //A programvezérlõ utasítások végrehajtásával kapcsolatos jelek.
-   .ex_jump(ex_jump),                  //Ugrás végrehajtása
-   .ex_call(ex_call),                  //Szubrutinhívás végrehajtása
-   .ex_ret_sub(ex_ret_sub),            //Visszatérés szubrutinból
-   .ex_ret_int(ex_ret_int),            //Visszatérés megszakításból
+   //A programvezï¿½rlï¿½ utasï¿½tï¿½sok vï¿½grehajtï¿½sï¿½val kapcsolatos jelek.
+   .ex_jump(ex_jump),                  //Ugrï¿½s vï¿½grehajtï¿½sa
+   .ex_call(ex_call),                  //Szubrutinhï¿½vï¿½s vï¿½grehajtï¿½sa
+   .ex_ret_sub(ex_ret_sub),            //Visszatï¿½rï¿½s szubrutinbï¿½l
+   .ex_ret_int(ex_ret_int),            //Visszatï¿½rï¿½s megszakï¿½tï¿½sbï¿½l
    
-   //Az adatstruktúrával kapcsolatos jelek.
-   .wr_data_sel(wr_data_sel),          //A regiszterbe írandó adat kiválasztása
-   .reg_wr_en(reg_wr_en),              //A regisztertömb írás engedélyezõ jele
-   .alu_op_type(alu_op_type),          //ALU mûvelet kiválasztó jel
+   //Az adatstruktï¿½rï¿½val kapcsolatos jelek.
+   .wr_data_sel(wr_data_sel),          //A regiszterbe ï¿½randï¿½ adat kivï¿½lasztï¿½sa
+   .reg_wr_en(reg_wr_en),              //A regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   .alu_op_type(alu_op_type),          //ALU mï¿½velet kivï¿½lasztï¿½ jel
    .alu_flag_z(alu_flag_z),            //Zero flag
    .alu_flag_c(alu_flag_c),            //Carry flag
    .alu_flag_n(alu_flag_n),            //Negative flag
    .alu_flag_v(alu_flag_v),            //Overflow flag
    
-   //Az adatmemóriával kapcsolatos jelek.
-   .bus_req(bus_req),                  //Busz hozzáférés kérése
-   .bus_grant(bus_grant),              //Busz hozzáférés megadása
-   .data_mem_wr(data_mem_wr),          //Írás engedélyezõ jel
-   .data_mem_rd(data_mem_rd),          //Olvasás engedélyezõ jel
+   //Az adatmemï¿½riï¿½val kapcsolatos jelek.
+   .bus_req(bus_req),                  //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   .bus_grant(bus_grant),              //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
+   .data_mem_wr(data_mem_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .data_mem_rd(data_mem_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
    
-   //A megszakítással kapcsolatos jelek.
-   .irq(irq),                          //Megszakításkérõ bemenet
-   .flag_ie_din(stack_dout[12]),       //Az IE flag-ba írandó érték
-   .flag_ie(dbg_flag_ie),              //Megyszakítás engedélyezõ flag (IE)
-   .flag_if_din(stack_dout[13]),       //Az IE flag-ba írandó érték
-   .flag_if(dbg_flag_if),              //Megyszakítás flag (IF)
+   //A megszakï¿½tï¿½ssal kapcsolatos jelek.
+   .irq(irq),                          //Megszakï¿½tï¿½skï¿½rï¿½ bemenet
+   .flag_ie_din(stack_dout[12]),       //Az IE flag-ba ï¿½randï¿½ ï¿½rtï¿½k
+   .flag_ie(dbg_flag_ie),              //Megyszakï¿½tï¿½s engedï¿½lyezï¿½ flag (IE)
+   .flag_if_din(stack_dout[13]),       //Az IE flag-ba ï¿½randï¿½ ï¿½rtï¿½k
+   .flag_if(dbg_flag_if),              //Megyszakï¿½tï¿½s flag (IF)
    
-   //A debug interfész jelei.
-   .dbg_break(dbg_break),              //Program végrehajtásának felfüggesztése
-   .dbg_continue(dbg_continue),        //Program végrehajtásának folytatása
-   .dbg_ie_wr(dbg_flag_wr),            //Az IE flag írás engedélyezõ jele
-   .dbg_ie_din(dbg_data_in[4]),        //Az IE bitbe írandó adat
-   .dbg_reg_wr(dbg_reg_wr),            //A regisztertömb írás engedélyezõ jele
-   .dbg_mem_wr(dbg_mem_wr),            //Az adatmemória írás engedélyezõ jele
-   .dbg_mem_rd(dbg_mem_rd),            //Az adatmemória olvasás engedélyezõ jele
-   .dbg_is_brk(dbg_is_brk)             //A töréspont állapot jelzése
+   //A debug interfï¿½sz jelei.
+   .dbg_break(dbg_break),              //Program vï¿½grehajtï¿½sï¿½nak felfï¿½ggesztï¿½se
+   .dbg_continue(dbg_continue),        //Program vï¿½grehajtï¿½sï¿½nak folytatï¿½sa
+   .dbg_ie_wr(dbg_flag_wr),            //Az IE flag ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   .dbg_ie_din(dbg_data_in[4]),        //Az IE bitbe ï¿½randï¿½ adat
+   .dbg_reg_wr(dbg_reg_wr),            //A regisztertï¿½mb ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   .dbg_mem_wr(dbg_mem_wr),            //Az adatmemï¿½ria ï¿½rï¿½s engedï¿½lyezï¿½ jele
+   .dbg_mem_rd(dbg_mem_rd),            //Az adatmemï¿½ria olvasï¿½s engedï¿½lyezï¿½ jele
+   .dbg_is_brk(dbg_is_brk)             //A tï¿½rï¿½spont ï¿½llapot jelzï¿½se
 );
 
 
