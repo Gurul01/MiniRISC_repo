@@ -29,6 +29,8 @@ module minirisc_cpu(
    output wire [47:0] cpu2dbg_data     //Jelek a CPU-t�l a debug modul fel�
 );
 
+`include "src\MiniRISC_CPU\control_defs.vh"
+
 //******************************************************************************
 //* Debug interf�sz jelek.                                                     *
 //******************************************************************************
@@ -56,10 +58,10 @@ wire [13:0] dbg_stack_top;             //A verem tetej�n l�v� adat
 wire       data_mem_wr;                //Adatmem�ria �r�s enged�lyez� jel
 wire       data_mem_rd;                //Adatmem�ria olvas�s enged�lyez� jel
 wire [7:0] const_data;                 //Az utas�t�sban l�v� konstans adat
-wire       wr_data_sel;                //A regiszterbe �rand� adat kiv�laszt�sa
+wire       wr_data_sel_cntrl;                //A regiszterbe �rand� adat kiv�laszt�sa
 wire       addr_op2_sel;               //Az ALU 2. operandus�nak kiv�laszt�sa
-wire       reg_wr_en;                  //A regisztert�mb �r�s enged�lyez� jele
-wire [3:0] reg_addr_x;                 //Regiszter c�me (X port)
+wire       reg_wr_en_cntrl;                  //A regisztert�mb �r�s enged�lyez� jele
+wire [3:0] reg_addr_x_cntrl;                 //Regiszter c�me (X port)
 wire [3:0] reg_addr_y;                 //Regiszter c�me (Y port)
 wire [1:0] alu_op_type;                //ALU m�velet kiv�laszt� jel
 wire [1:0] alu_arith_sel;              //Aritmetikai m�velet kiv�laszt� jel
@@ -73,6 +75,8 @@ wire       alu_flag_n;                 //Negative flag
 wire       alu_flag_v;                 //Overflow flag
 wire [7:0] jump_addr;                  //Ugr�si c�m
 wire [7:0] SP;                         //Stack pointer regiszter
+wire [7:0] SP_out;
+wire [7:0] reg_wr_data;
 wire [7:0] PC;
 wire [7:0] return_pc;
 wire stack_op_ongoing;
@@ -99,12 +103,12 @@ control_unit control_unit(
    .const_data(const_data),
    
    //Az adatstrukt�ra multiplexereinek vez�rl� jelei.
-   .wr_data_sel(wr_data_sel),          //A regiszterbe �rand� adat kiv�laszt�sa
+   .wr_data_sel(wr_data_sel_cntrl),          //A regiszterbe �rand� adat kiv�laszt�sa
    .addr_op2_sel(addr_op2_sel),        //Az ALU 2. operandus�nak kiv�laszt�sa
    
    //A regisztert�mbbel kapcsolatos jelek.
-   .reg_wr_en(reg_wr_en),              //�r�s enged�lyez� jel
-   .reg_addr_x(reg_addr_x),            //Regiszter c�me (X port)
+   .reg_wr_en(reg_wr_en_cntrl),              //�r�s enged�lyez� jel
+   .reg_addr_x(reg_addr_x_cntrl),            //Regiszter c�me (X port)
    .reg_addr_y(reg_addr_y),            //Regiszter c�me (Y port)
    
    //Az ALU-val kapcsolatos jelek.
@@ -157,13 +161,18 @@ control_unit control_unit(
 wire [7:0] data_mem_addr;
 wire [7:0] data_mem_dout;
 
+assign reg_wr_en = (stack_op_ongoing) ? (stack_op_end) : (reg_wr_en_cntrl);
+assign reg_addr_x = (stack_op_ongoing) ? (SP_address) : (reg_addr_x_cntrl);
+assign wr_data_sel = (stack_op_ongoing) ? (1'b1) : (wr_data_sel_cntrl);
+assign reg_wr_data = (stack_op_ongoing) ? (SP_out) : (m_slv2mst_data);
+
 datapath datapath(
    //�rajel.
    .clk(clk),
    
    //Az adatmem�ri�val kapcsolatos jelek.
    .data_mem_addr(data_mem_addr),      //C�mbusz
-   .data_mem_din(m_slv2mst_data),      //Olvas�si adatbusz
+   .data_mem_din(reg_wr_data),      //Olvas�si adatbusz
    .data_mem_dout(data_mem_dout),      //�r�si adatbusz
    
    //Az utas�t�sban l�v� konstans adat.
@@ -236,6 +245,7 @@ stack stack(
    .data_mem_dout(stack_mem_dout),    //�r�si adatbusz
 
    .SP(SP),
+   .SP_out(SP_out),
    
    .data_in_PC(PC),                //A verembe �rand� adat
    .data_in_flags(stack_din_flags), 
@@ -295,7 +305,7 @@ assign dbg_mem_rd          = dbg2cpu_data[22];
 
 assign cpu2dbg_data[7:0]   = cpu2pmem_addr;
 assign cpu2dbg_data[15:8]  = dbg_reg_dout;
-assign cpu2dbg_data[23:16] = m_slv2mst_data;
+assign cpu2dbg_data[23:16] = reg_wr_data;
 assign cpu2dbg_data[37:24] = dbg_stack_top;
 assign cpu2dbg_data[38]    = alu_flag_z;
 assign cpu2dbg_data[39]    = alu_flag_c;

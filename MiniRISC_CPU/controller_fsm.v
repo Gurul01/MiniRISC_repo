@@ -235,7 +235,7 @@ begin
          STATE_INT_REQ : state <= STATE_FETCH;
 
 
-         STATE_STACK_OP: if(stack_op_end)
+         STATE_STACK_OP: if(stack_op_end != 1'b1)
                             state <= STATE_STACK_OP;
                          else
                             if(flag_ie && irq)

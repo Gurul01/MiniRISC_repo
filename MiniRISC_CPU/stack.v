@@ -2,25 +2,26 @@
 
 module stack(
   input  wire clk,
-
   input  wire rst,
 
-  input  wire stack_op_start,
+  input  wire stack_op_ongoing,
   input  wire push_or_pop,
   output wire stack_op_end,
 
-  input  wire fetch,
+  input  wire bus_grant,
+
+  output wire data_mem_addr,
+  inout  wire data_mem_din,
+  output wire data_mem_dout,
 
   input  wire [7:0] SP,
+  output reg  [7:0] SP_out,
     
   input  wire [7:0] data_in_PC,
   input  wire [5:0] data_in_flags, 
 
   output wire [5:0] data_out_flags,
   output wire [7:0] data_out_PC,
-
-  output reg  in_progress,
-  output reg  [15:0] sub_ir
 );
 
 `include "src\MiniRISC_CPU\control_defs.vh"
