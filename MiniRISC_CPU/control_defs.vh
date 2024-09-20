@@ -36,3 +36,6 @@ localparam IF_FLAG = 5;             //Megszak�t�s flag
 //* SP regiszter cime.                                                         *
 //******************************************************************************
 localparam SP_address = 4'b0000;
+
+localparam PUSH = 1'b1;
+localparam POP  = 1'b0;

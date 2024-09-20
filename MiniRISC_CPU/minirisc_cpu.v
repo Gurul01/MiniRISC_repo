@@ -73,6 +73,12 @@ wire       alu_flag_n;                 //Negative flag
 wire       alu_flag_v;                 //Overflow flag
 wire [7:0] jump_addr;                  //Ugr�si c�m
 wire [7:0] SP;                         //Stack pointer regiszter
+wire [7:0] PC;
+wire [7:0] return_pc;
+wire stack_op_ongoing;
+wire stack_op_end;
+wire push_or_pop;
+wire [5:0] stack_dout_flags;
 
 control_unit control_unit(
    //�rajel �s reset.
@@ -106,7 +112,6 @@ control_unit control_unit(
    .alu_arith_sel(alu_arith_sel),      //Aritmetikai m�velet kiv�laszt� jel
    .alu_logic_sel(alu_logic_sel),      //Logikai m�velet kiv�laszt� jel
    .alu_shift_sel(alu_shift_sel),      //Shiftel�si m�velet kiv�laszt� jel
-   .alu_flag_din(alu_flag_din),        //A flag-ekbe �rand� �rt�k
    .alu_flag_wr(alu_flag_wr),          //A flag-ek �r�s enged�lyez� jele
    .alu_flag_z(alu_flag_z),            //Zero flag
    .alu_flag_c(alu_flag_c),            //Carry flag
@@ -116,10 +121,18 @@ control_unit control_unit(
    //Ugr�si c�m az adatstrukt�r�t�l.
    .jump_addr(jump_addr),
 
-   .SP(SP),
+   .pc(PC),
+   .return_addr(return_pc),
    
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    .irq(irq),
+
+   .flag_ie_din(stack_dout_flags[4]),
+   .flag_if_din(stack_dout_flags[5]),
+
+   .stack_op_ongoing(stack_op_ongoing),
+   .stack_op_end(stack_op_end),
+   .push_or_pop(push_or_pop),
    
    //A debug interf�sz jelei.
    .dbg_data_in(dbg_data_in),          //Adatbemenet
@@ -135,7 +148,6 @@ control_unit control_unit(
    .dbg_is_brk(dbg_is_brk),            //A t�r�spont �llapot jelz�se
    .dbg_flag_ie(dbg_flag_ie),          //Megyszak�t�s enged�lyez� flag (IE)
    .dbg_flag_if(dbg_flag_if),          //Megyszak�t�s flag (IF)
-   .dbg_stack_top(dbg_stack_top)       //A verem tetej�n l�v� adat
 );
 
 
@@ -191,14 +203,81 @@ datapath datapath(
 );
 
 
+
+
+
+
+
+
+//******************************************************************************
+//* Verem. Szubrutinh�v�s �s megszak�t�sk�r�s eset�n ide ment�dik el a         *
+//* programsz�ml�l�, valamint a flag-ek �rt�ke.                                *
+//******************************************************************************
+wire [5:0] stack_din_flags;                 //A verembe �rand� adat
+
+wire [7:0] stack_mem_addr;
+wire [7:0] stack_mem_din;
+wire [7:0] stack_mem_dout;
+
+// Ha stack_op_onging van es megjon a bus grant akkor kezodik az operacio a push_or_pop-nak megfeleloen
+// Amint vegeztunk nyomunk egy op_end-et
+stack stack(
+   .clk(clk),
+   .rst(rst),
+
+   .stack_op_ongoing(stack_op_ongoing),
+   .push_or_pop(push_or_pop),
+   .stack_op_end(stack_op_end),
+
+   .bus_grant(bus_grant),
+
+   .data_mem_addr(stack_mem_addr),    //C�mbusz
+   .data_mem_din(stack_mem_din),     //Olvas�si adatbusz
+   .data_mem_dout(stack_mem_dout),    //�r�si adatbusz
+
+   .SP(SP),
+   
+   .data_in_PC(PC),                //A verembe �rand� adat
+   .data_in_flags(stack_din_flags), 
+
+   .data_out_flags(stack_dout_flags),  
+   .data_out_PC(return_pc)
+);
+
+//A verembe elmentj�k a programsz�ml�l�t �s az ALU flag-eket.
+assign stack_din_flags[0]   = alu_flag_z;
+assign stack_din_flags[1]   = alu_flag_c;
+assign stack_din_flags[2]  = alu_flag_n;
+assign stack_din_flags[3]  = alu_flag_v;
+assign stack_din_flags[4]  = dbg_flag_ie;
+assign stack_din_flags[5]  = dbg_flag_if;
+
+//Az ALU flag-ekkel kapcsolatos jelek. Break �llapotban a debug
+//modul �rhatja a flag-eket, egy�bk�nt pedig a verembe elmentett
+//�rt�kek �ll�that�k vissza.
+
+assign alu_flag_din   = (dbg_is_brk) ? dbg_data_in[3:0] : stack_dout_flags[3:0];
+
+//A verem tetej�n l�v� adat.
+assign dbg_stack_top  = stack_dout_flags;
+
+
+
+
+
+
+
+
+
+
 //******************************************************************************
 //* Az adatmem�ria interf�sz kimeneteinek meghajt�sa. Ha a processzor nem kap  *
 //* busz hozz�f�r�st, akkor ezek �rt�ke inakt�v nulla kell, hogy legyen.       *
 //******************************************************************************
-assign m_mst2slv_addr = (m_bus_grant) ? data_mem_addr : 8'd0;
+assign m_mst2slv_addr = (m_bus_grant) ? ((stack_op_ongoing) ? stack_mem_addr : data_mem_addr) : 8'd0;
 assign m_mst2slv_wr   = (m_bus_grant) ? data_mem_wr   : 1'b0;
 assign m_mst2slv_rd   = (m_bus_grant) ? data_mem_rd   : 1'b0;
-assign m_mst2slv_data = (m_bus_grant) ? data_mem_dout : 8'd0;
+assign m_mst2slv_data = (m_bus_grant) ? ((stack_op_ongoing) ? stack_mem_dout : data_mem_dout) : 8'd0;
 
 
 //******************************************************************************

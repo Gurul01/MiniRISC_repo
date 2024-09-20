@@ -37,20 +37,28 @@ module control_unit(
    output wire [1:0]  alu_arith_sel,   //Aritmetikai m�velet kiv�laszt� jel
    output wire [1:0]  alu_logic_sel,   //Logikai m�velet kiv�laszt� jel
    output wire [3:0]  alu_shift_sel,   //Shiftel�si m�velet kiv�laszt� jel
-   output wire [3:0]  alu_flag_din,    //A flag-ekbe �rand� �rt�k
-   output wire        alu_flag_wr,     //A flag-ek �r�s enged�lyez� jele
    input  wire        alu_flag_z,      //Zero flag
    input  wire        alu_flag_c,      //Carry flag
    input  wire        alu_flag_n,      //Negative flag
    input  wire        alu_flag_v,      //Overflow flag
+
+   output wire        alu_flag_wr,
    
    //Ugr�si c�m az adatstrukt�r�t�l.
    input  wire [7:0]  jump_addr,
 
-   input  wire [7:0]  SP;
-   
+   output reg  [7:0] pc;               //Programsz�ml�l� regiszter
+   input  wire [7:0] return_addr;   
+
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    input  wire        irq,
+
+   inout  wire        flag_ie_din,
+   input  wire        flag_if_din,
+
+   output wire       stack_op_ongoing,
+   input  wire       stack_op_end,
+   output wire       push_or_pop,
    
    //A debug interf�sz jelei.
    input  wire [7:0]  dbg_data_in,     //Adatbemenet
@@ -66,11 +74,12 @@ module control_unit(
    output wire        dbg_is_brk,      //A t�r�spont �llapot jelz�se
    output wire        dbg_flag_ie,     //Megyszak�t�s enged�lyez� flag (IE)
    output wire        dbg_flag_if,     //Megyszak�t�s flag (IF)
-   output wire [13:0] dbg_stack_top    //A verem tetej�n l�v� adat
 );
 
 `include "src\MiniRISC_CPU\control_defs.vh"
 `include "src\MiniRISC_CPU\opcode_defs.vh"
+
+reg jump_addr_ret;
 
 //******************************************************************************
 //* Vez�rl� jelek.                                                             *
@@ -86,9 +95,6 @@ wire ex_ret_int;                       //Visszat�r�s megszak�t�sb�l
 //******************************************************************************
 //* Programsz�ml�l� (PC). A leh�vand� utas�t�s c�m�t t�rolja.                  *
 //******************************************************************************
-reg  [7:0] pc;                         //Programsz�ml�l� regiszter
-wire [7:0] return_addr;                //Visszat�r�si c�m
-
 always @(posedge clk)
 begin
    if (initialize)
@@ -101,7 +107,7 @@ begin
             pc <= dbg_data_in;         //A debug modul �rja a programsz�ml�l�t
          else
             if (ex_jump || ex_call)
-               pc <= jump_addr;        //Az ugr�si c�m bet�lt�se
+               pc <= jump_addr_ret;        //Az ugr�si c�m bet�lt�se
             else
                if (ex_ret_sub || ex_ret_int)
                   pc <= return_addr;   //A visszat�r�si c�m bet�lt�se
@@ -114,49 +120,8 @@ end
 assign prg_mem_addr = pc;
 
 
-//******************************************************************************
-//* Verem. Szubrutinh�v�s �s megszak�t�sk�r�s eset�n ide ment�dik el a         *
-//* programsz�ml�l�, valamint a flag-ek �rt�ke.                                *
-//******************************************************************************
-wire [13:0] stack_din;                 //A verembe �rand� adat
-wire [13:0] stack_dout;                //A verem tetej�n l�v� adat
-
-stack #(
-   //Az adat sz�less�ge bitekben.
-   .DATA_WIDTH(14)
-) stack (
-   //�rajel.
-   .clk(clk),
-   
-   //Adatvonalak.
-   .data_in(stack_din),                //A verembe �rand� adat
-   .data_out(stack_dout),              //A verem tetej�n l�v� adat
-   
-   //Vez�rl� bemenetek.
-   .push(dbg_int_req | ex_call),       //Adat �r�sa a verembe
-   .pop(ex_ret_sub | ex_ret_int)       //Adat olvas�sa a veremb�l
-);
-
-//A verembe elmentj�k a programsz�ml�l�t �s az ALU flag-eket.
-assign stack_din[7:0] = pc;
-assign stack_din[8]   = alu_flag_z;
-assign stack_din[9]   = alu_flag_c;
-assign stack_din[10]  = alu_flag_n;
-assign stack_din[11]  = alu_flag_v;
-assign stack_din[12]  = dbg_flag_ie;
-assign stack_din[13]  = dbg_flag_if;
-
-//A visszat�r�si c�m.
-assign return_addr    = stack_dout[7:0];
-
-//Az ALU flag-ekkel kapcsolatos jelek. Break �llapotban a debug
-//modul �rhatja a flag-eket, egy�bk�nt pedig a verembe elmentett
-//�rt�kek �ll�that�k vissza.
-assign alu_flag_wr    = (dbg_is_brk) ? dbg_flag_wr      : ex_ret_int;
-assign alu_flag_din   = (dbg_is_brk) ? dbg_data_in[3:0] : stack_dout[11:8];
-
-//A verem tetej�n l�v� adat.
-assign dbg_stack_top  = stack_dout;
+//A flagek irasanak engedelyezese amikor interrupbol terunk vissza
+assign alu_flag_wr    = (dbg_is_brk) ? dbg_flag_wr : ex_ret_int;
 
 
 //******************************************************************************
@@ -213,7 +178,7 @@ controller_fsm controller_fsm(
    
    //A processzor �llapot�val kapcsolatos jelek.
    .initialize(initialize),            //Inicializ�l�s
-   .fetch(fetch),                      //Utas�t�s leh�v�s
+   .fetch(fetch),                  //Utas�t�s leh�v�s
    .decode(dbg_instr_dec),             //Utas�t�s dek�dol�s
    .interrupt(dbg_int_req),            //Megszak�t�s kiszolg�l�s
    
@@ -222,6 +187,11 @@ controller_fsm controller_fsm(
    .ex_call(ex_call),                  //Szubrutinh�v�s v�grehajt�sa
    .ex_ret_sub(ex_ret_sub),            //Visszat�r�s szubrutinb�l
    .ex_ret_int(ex_ret_int),            //Visszat�r�s megszak�t�sb�l
+
+   .stack_op_ongoing(stack_op_ongoing),
+   .stack_op_end(stack_op_end),
+
+   .push_or_pop(push_or_pop),
    
    //Az adatstrukt�r�val kapcsolatos jelek.
    .wr_data_sel(wr_data_sel),          //A regiszterbe �rand� adat kiv�laszt�sa
@@ -240,9 +210,9 @@ controller_fsm controller_fsm(
    
    //A megszak�t�ssal kapcsolatos jelek.
    .irq(irq),                          //Megszak�t�sk�r� bemenet
-   .flag_ie_din(stack_dout[12]),       //Az IE flag-ba �rand� �rt�k
+   .flag_ie_din(flag_ie_din),       //Az IE flag-ba �rand� �rt�k
    .flag_ie(dbg_flag_ie),              //Megyszak�t�s enged�lyez� flag (IE)
-   .flag_if_din(stack_dout[13]),       //Az IE flag-ba �rand� �rt�k
+   .flag_if_din(flag_if_din),       //Az IE flag-ba �rand� �rt�k
    .flag_if(dbg_flag_if),              //Megyszak�t�s flag (IF)
    
    //A debug interf�sz jelei.
