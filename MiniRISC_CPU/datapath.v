@@ -8,6 +8,7 @@
 module datapath(
    //�rajel.
    input  wire       clk,
+   input  wire       rst,
    
    //Az adatmem�ri�val kapcsolatos jelek.
    output wire [7:0] data_mem_addr,    //C�mbusz
@@ -76,6 +77,7 @@ wire [3:0] address_x = (dbg_is_brk) ? dbg_addr_in[3:0] : reg_addr_x;
 reg_file reg_file(
    //�rajel.
    .clk(clk),
+   .rst(rst),
    
    //Az �r�si �s az X olvas�si port.
    .addr_x(address_x),                 //A regiszter c�me

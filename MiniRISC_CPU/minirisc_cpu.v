@@ -23,6 +23,9 @@ module minirisc_cpu(
    
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    input  wire        irq,
+
+   output wire [7:0] SP;
+   input  wire [7:0] dbg_stack_top;
    
    //Debug interf�sz.
    input  wire [22:0] dbg2cpu_data,    //Jelek a debug modult�l a CPU fel�
@@ -74,7 +77,7 @@ wire       alu_flag_c;                 //Carry flag
 wire       alu_flag_n;                 //Negative flag
 wire       alu_flag_v;                 //Overflow flag
 wire [7:0] jump_addr;                  //Ugr�si c�m
-wire [7:0] SP;                         //Stack pointer regiszter
+//wire [7:0] SP;                         //Stack pointer regiszter
 wire [7:0] SP_out;
 wire [7:0] reg_wr_data;
 wire [7:0] PC;
@@ -161,14 +164,15 @@ control_unit control_unit(
 wire [7:0] data_mem_addr;
 wire [7:0] data_mem_dout;
 
-assign reg_wr_en = (stack_op_ongoing) ? (stack_op_end) : (reg_wr_en_cntrl);
-assign reg_addr_x = (stack_op_ongoing) ? (SP_address) : (reg_addr_x_cntrl);
-assign wr_data_sel = (stack_op_ongoing) ? (1'b1) : (wr_data_sel_cntrl);
-assign reg_wr_data = (stack_op_ongoing) ? (SP_out) : (m_slv2mst_data);
+assign reg_wr_en   = (stack_op_ongoing) ? (stack_op_end) : (reg_wr_en_cntrl);
+assign reg_addr_x  = (stack_op_ongoing) ? (SP_address)   : (reg_addr_x_cntrl);
+assign wr_data_sel = (stack_op_ongoing) ? (1'b1)         : (wr_data_sel_cntrl);
+assign reg_wr_data = (stack_op_ongoing) ? (SP_out)       : (m_slv2mst_data);
 
 datapath datapath(
    //�rajel.
    .clk(clk),
+   .rst(rst),
    
    //Az adatmem�ri�val kapcsolatos jelek.
    .data_mem_addr(data_mem_addr),      //C�mbusz
@@ -212,24 +216,18 @@ datapath datapath(
 );
 
 
-
-
-
-
-
-
 //******************************************************************************
 //* Verem. Szubrutinh�v�s �s megszak�t�sk�r�s eset�n ide ment�dik el a         *
 //* programsz�ml�l�, valamint a flag-ek �rt�ke.                                *
 //******************************************************************************
-wire [5:0] stack_din_flags;                 //A verembe �rand� adat
+wire [5:0] stack_din_flags;
 
 wire [7:0] stack_mem_addr;
 wire [7:0] stack_mem_din;
 wire [7:0] stack_mem_dout;
 
-// Ha stack_op_onging van es megjon a bus grant akkor kezodik az operacio a push_or_pop-nak megfeleloen
-// Amint vegeztunk nyomunk egy op_end-et
+// Ha stack_op_onging == 1 es megjon a bus_grant, akkor kezodik a stack muvelet a push_or_pop-nak megfeleloen.
+// Amint vege a muveletnek, az utolso ciklus utan egy orajelig az stack_op_end magas erteku.
 stack stack(
    .clk(clk),
    .rst(rst),
@@ -238,7 +236,7 @@ stack stack(
    .push_or_pop(push_or_pop),
    .stack_op_end(stack_op_end),
 
-   .bus_grant(bus_grant),
+   .bus_grant(m_bus_grant),
 
    .data_mem_addr(stack_mem_addr),    //C�mbusz
    .data_mem_din(stack_mem_din),     //Olvas�si adatbusz
@@ -255,8 +253,8 @@ stack stack(
 );
 
 //A verembe elmentj�k a programsz�ml�l�t �s az ALU flag-eket.
-assign stack_din_flags[0]   = alu_flag_z;
-assign stack_din_flags[1]   = alu_flag_c;
+assign stack_din_flags[0]  = alu_flag_z;
+assign stack_din_flags[1]  = alu_flag_c;
 assign stack_din_flags[2]  = alu_flag_n;
 assign stack_din_flags[3]  = alu_flag_v;
 assign stack_din_flags[4]  = dbg_flag_ie;
@@ -268,25 +266,14 @@ assign stack_din_flags[5]  = dbg_flag_if;
 
 assign alu_flag_din   = (dbg_is_brk) ? dbg_data_in[3:0] : stack_dout_flags[3:0];
 
-//A verem tetej�n l�v� adat.
-assign dbg_stack_top  = stack_dout_flags;
-
-
-
-
-
-
-
-
-
 
 //******************************************************************************
 //* Az adatmem�ria interf�sz kimeneteinek meghajt�sa. Ha a processzor nem kap  *
 //* busz hozz�f�r�st, akkor ezek �rt�ke inakt�v nulla kell, hogy legyen.       *
 //******************************************************************************
 assign m_mst2slv_addr = (m_bus_grant) ? ((stack_op_ongoing) ? stack_mem_addr : data_mem_addr) : 8'd0;
-assign m_mst2slv_wr   = (m_bus_grant) ? data_mem_wr   : 1'b0;
-assign m_mst2slv_rd   = (m_bus_grant) ? data_mem_rd   : 1'b0;
+assign m_mst2slv_wr   = (m_bus_grant) ? data_mem_wr                                           : 1'b0;
+assign m_mst2slv_rd   = (m_bus_grant) ? data_mem_rd                                           : 1'b0;
 assign m_mst2slv_data = (m_bus_grant) ? ((stack_op_ongoing) ? stack_mem_dout : data_mem_dout) : 8'd0;
 
 

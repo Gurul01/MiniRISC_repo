@@ -2,66 +2,69 @@
 //* MiniRISC rendszer top-level modul.                                         *
 //******************************************************************************
 module minirisc_system(
-   //Órajel és reset.
-   input  wire         clk16M,      //16 MHz órajel
-   input  wire         rstbt,       //Reset nyomógomb
+   //ï¿½rajel ï¿½s reset.
+   input  wire         clk16M,      //16 MHz ï¿½rajel
+   input  wire         rstbt,       //Reset nyomï¿½gomb
    
-   //Perifériák.
-   input  wire [7:0]   sw,          //DIP kapcsoló
-   input  wire [3:0]   bt,          //Nyomógombok
+   //Perifï¿½riï¿½k.
+   input  wire [7:0]   sw,          //DIP kapcsolï¿½
+   input  wire [3:0]   bt,          //Nyomï¿½gombok
    output wire [7:0]   ld,          //LED-ek
-   output wire [7:0]   seg_n,       //Szegmens vezérlõ jelek (aktív alacsony)
-   output wire [3:0]   dig_n,       //Digit kiválasztó jelek (aktív alacsony)
-   output wire [4:0]   col_n,       //Oszlop kiválasztó jelek (aktív alacsony)
+   output wire [7:0]   seg_n,       //Szegmens vezï¿½rlï¿½ jelek (aktï¿½v alacsony)
+   output wire [3:0]   dig_n,       //Digit kivï¿½lasztï¿½ jelek (aktï¿½v alacsony)
+   output wire [4:0]   col_n,       //Oszlop kivï¿½lasztï¿½ jelek (aktï¿½v alacsony)
    
    //USRT.
-   input  wire         dev_clk,     //USRT órajel
+   input  wire         dev_clk,     //USRT ï¿½rajel
    input  wire         dev_mosi,    //Soros adatbemenet
    output wire         dev_miso,    //Soros adatkimenet
    
-   //GPIO (A bõvítõcsatlakozó).
-   inout  wire [14:4]  aio,         //Kétirányú I/O vonalak
+   //GPIO (A bï¿½vï¿½tï¿½csatlakozï¿½).
+   inout  wire [14:4]  aio,         //Kï¿½tirï¿½nyï¿½ I/O vonalak
    input  wire [16:15] ai,          //Csak bemeneti vonalak
    
-   //GPIO (B bõvítõcsatlakozó).
-   inout  wire [14:4]  bio,         //Kétirányú I/O vonalak
+   //GPIO (B bï¿½vï¿½tï¿½csatlakozï¿½).
+   inout  wire [14:4]  bio,         //Kï¿½tirï¿½nyï¿½ I/O vonalak
    input  wire [16:15] bi           //Csak bemeneti vonalak
 );
 
 //******************************************************************************
-//* Órajel és reset.                                                           *
+//* ï¿½rajel ï¿½s reset.                                                           *
 //******************************************************************************
 wire clk = clk16M;
 wire rst;
 
 
 //******************************************************************************
-//* Az adatmemória busz interfészhez tartozó jelek.                            *
+//* Az adatmemï¿½ria busz interfï¿½szhez tartozï¿½ jelek.                            *
 //******************************************************************************
-//A processzor master adatmemória interfészének kimenetei.
+//A processzor master adatmemï¿½ria interfï¿½szï¿½nek kimenetei.
 wire [7:0] cpu2slv_addr;
 wire       cpu2slv_wr;
 wire       cpu2slv_rd;
 wire [7:0] cpu2slv_data;
 
-//A DMA vezérlõ master adatmemória interfészének kimenetei.
+//A DMA vezï¿½rlï¿½ master adatmemï¿½ria interfï¿½szï¿½nek kimenetei.
 wire [7:0] dma2slv_addr;
 wire       dma2slv_wr;
 wire       dma2slv_rd;
 wire [7:0] dma2slv_data;
 
-//Olvasási adatbusz a slave egységektõl a master egységek felé.
+//Olvasï¿½si adatbusz a slave egysï¿½gektï¿½l a master egysï¿½gek felï¿½.
 wire [7:0] slv2mst_data;
 
-//Jelek a slave egységek felé.
+//Jelek a slave egysï¿½gek felï¿½.
 wire [7:0] mst2slv_addr = cpu2slv_addr | dma2slv_addr;
 wire       mst2slv_wr   = cpu2slv_wr   | dma2slv_wr;
 wire       mst2slv_rd   = cpu2slv_rd   | dma2slv_rd;
 wire [7:0] mst2slv_data = cpu2slv_data | dma2slv_data;
 
+wire [7:0] SP;
+wire [7:0] dbg_stack_top;
+
 
 //******************************************************************************
-//* Adatmemória busz arbiter.                                                  *
+//* Adatmemï¿½ria busz arbiter.                                                  *
 //******************************************************************************
 wire cpu_bus_req;
 wire cpu_bus_grant;
@@ -69,13 +72,13 @@ wire dma_bus_req;
 wire dma_bus_grant;
 
 bus_arbiter_2m_fixed bus_arbiter(  
-   //A master 0 egységhez tartozó jelek.
-   .mst0_req(cpu_bus_req),             //Busz hozzáférés kérése
-   .mst0_grant(cpu_bus_grant),         //Busz hozzáférés megadása
+   //A master 0 egysï¿½ghez tartozï¿½ jelek.
+   .mst0_req(cpu_bus_req),             //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   .mst0_grant(cpu_bus_grant),         //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
    
-   //A master 1 egységhez tartozó jelek.
-   .mst1_req(dma_bus_req),             //Busz hozzáférés kérése
-   .mst1_grant(dma_bus_grant)          //Busz hozzáférés megadása
+   //A master 1 egysï¿½ghez tartozï¿½ jelek.
+   .mst1_req(dma_bus_req),             //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   .mst1_grant(dma_bus_grant)          //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
 );
 
 
@@ -89,29 +92,32 @@ wire [22:0] dbg2cpu_data;
 wire [47:0] cpu2dbg_data;
 
 minirisc_cpu minirisc_cpu(
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Aszinkron reset
    
-   //Busz interfész a programmemória eléréséhez.
-   .cpu2pmem_addr(cpu2prgmem_addr),    //Címbusz
-   .pmem2cpu_data(prgmem2cpu_data),    //Olvasási adatbusz
+   //Busz interfï¿½sz a programmemï¿½ria elï¿½rï¿½sï¿½hez.
+   .cpu2pmem_addr(cpu2prgmem_addr),    //Cï¿½mbusz
+   .pmem2cpu_data(prgmem2cpu_data),    //Olvasï¿½si adatbusz
    
-   //Master busz interfész az adatmemória eléréséhez.
-   .m_bus_req(cpu_bus_req),            //Busz hozzáférés kérése
-   .m_bus_grant(cpu_bus_grant),        //Busz hozzáférés megadása
-   .m_mst2slv_addr(cpu2slv_addr),      //Címbusz
-   .m_mst2slv_wr(cpu2slv_wr),          //Írás engedélyezõ jel
-   .m_mst2slv_rd(cpu2slv_rd),          //Olvasás engedélyezõ jel
-   .m_mst2slv_data(cpu2slv_data),      //Írási adatbusz
-   .m_slv2mst_data(slv2mst_data),      //Olvasási adatbusz
+   //Master busz interfï¿½sz az adatmemï¿½ria elï¿½rï¿½sï¿½hez.
+   .m_bus_req(cpu_bus_req),            //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   .m_bus_grant(cpu_bus_grant),        //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
+   .m_mst2slv_addr(cpu2slv_addr),      //Cï¿½mbusz
+   .m_mst2slv_wr(cpu2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .m_mst2slv_rd(cpu2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .m_mst2slv_data(cpu2slv_data),      //ï¿½rï¿½si adatbusz
+   .m_slv2mst_data(slv2mst_data),      //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ bemenet (aktív magas szintérzékeny).
+   //Megszakï¿½tï¿½skï¿½rï¿½ bemenet (aktï¿½v magas szintï¿½rzï¿½keny).
    .irq(irq),
+
+   .SP(SP);
+   .dbg_stack_top(dbg_stack_top);
    
-   //Debug interfész.
-   .dbg2cpu_data(dbg2cpu_data),        //Jelek a debug modultól a CPU felé
-   .cpu2dbg_data(cpu2dbg_data)         //Jelek a CPU-tól a debug modul felé
+   //Debug interfï¿½sz.
+   .dbg2cpu_data(dbg2cpu_data),        //Jelek a debug modultï¿½l a CPU felï¿½
+   .cpu2dbg_data(cpu2dbg_data)         //Jelek a CPU-tï¿½l a debug modul felï¿½
 );
 
 
@@ -123,24 +129,24 @@ wire [15:0] dbg2prgmem_data;
 wire        dbg2prgmem_wr;
 
 debug_module debug_module(
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst_in(rstbt),                     //Reset bemenet
-   .rst_out(rst),                      //Reset jel a rendszer számára
+   .rst_out(rst),                      //Reset jel a rendszer szï¿½mï¿½ra
    
-   //A programmemória írásához szükséges jelek.
-   .dbg2pmem_addr(dbg2prgmem_addr),    //Írási cím
-   .dbg2pmem_data(dbg2prgmem_data),    //A memóriába írandó adat
-   .dbg2pmem_wr(dbg2prgmem_wr),        //Írás engedélyezõ jel
+   //A programmemï¿½ria ï¿½rï¿½sï¿½hoz szï¿½ksï¿½ges jelek.
+   .dbg2pmem_addr(dbg2prgmem_addr),    //ï¿½rï¿½si cï¿½m
+   .dbg2pmem_data(dbg2prgmem_data),    //A memï¿½riï¿½ba ï¿½randï¿½ adat
+   .dbg2pmem_wr(dbg2prgmem_wr),        //ï¿½rï¿½s engedï¿½lyezï¿½ jel
    
-   //Debug interfész a CPU felé.
-   .dbg2cpu_data(dbg2cpu_data),        //Jelek a debug modultól a CPU felé
-   .cpu2dbg_data(cpu2dbg_data)         //Jelek a CPU-tól a debug modul felé
+   //Debug interfï¿½sz a CPU felï¿½.
+   .dbg2cpu_data(dbg2cpu_data),        //Jelek a debug modultï¿½l a CPU felï¿½
+   .cpu2dbg_data(cpu2dbg_data)         //Jelek a CPU-tï¿½l a debug modul felï¿½
 );
 
 
 //******************************************************************************
-//* 256 x 16 bites programmemória (elosztott RAM).                             *
+//* 256 x 16 bites programmemï¿½ria (elosztott RAM).                             *
 //******************************************************************************
 (* ram_style = "distributed" *)
 reg [15:0] prg_mem [255:0];
@@ -155,44 +161,44 @@ assign prgmem2cpu_data = prg_mem[cpu2prgmem_addr];
 
 
 //******************************************************************************
-//* DMA vezérlõ.                                                               *
-//* Címtartomány: 0x8C - 0x8F (írható/olvasható)                               *
+//* DMA vezï¿½rlï¿½.                                                               *
+//* Cï¿½mtartomï¿½ny: 0x8C - 0x8F (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_dma2mst_data;
 wire       dma_irq;
 
 dma_controller #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h8c)
 ) dma_controller (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei (regiszter elérés).
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_dma2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei (regiszter elï¿½rï¿½s).
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_dma2mst_data),    //Olvasï¿½si adatbusz
    
-   //A master busz interfész jelei (DMA átvitel).
-   .m_bus_req(dma_bus_req),            //Busz hozzáférés kérése
-   .m_bus_grant(dma_bus_grant),        //Busz hozzáférés megadása
-   .m_mst2slv_addr(dma2slv_addr),      //Címbusz
-   .m_mst2slv_wr(dma2slv_wr),          //Írás engedélyezõ jel
-   .m_mst2slv_rd(dma2slv_rd),          //Olvasás engedélyezõ jel
-   .m_mst2slv_data(dma2slv_data),      //Írási adatbusz
-   .m_slv2mst_data(slv2mst_data),      //Olvasási adatbusz
+   //A master busz interfï¿½sz jelei (DMA ï¿½tvitel).
+   .m_bus_req(dma_bus_req),            //Busz hozzï¿½fï¿½rï¿½s kï¿½rï¿½se
+   .m_bus_grant(dma_bus_grant),        //Busz hozzï¿½fï¿½rï¿½s megadï¿½sa
+   .m_mst2slv_addr(dma2slv_addr),      //Cï¿½mbusz
+   .m_mst2slv_wr(dma2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .m_mst2slv_rd(dma2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .m_mst2slv_data(dma2slv_data),      //ï¿½rï¿½si adatbusz
+   .m_slv2mst_data(slv2mst_data),      //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(dma_irq)
 );
 
 
 //******************************************************************************
-//* 128 x 8 bites adatmemória.                                                 *
-//* Címtartomány: 0x00 - 0x7F (írható/olvasható)                               *
+//* 128 x 8 bites adatmemï¿½ria.                                                 *
+//* Cï¿½mtartomï¿½ny: 0x00 - 0x7F (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 (* ram_style = "distributed" *)
 reg  [7:0] data_mem [127:0];
@@ -203,6 +209,8 @@ wire       data_mem_rd    = mst2slv_rd & ~mst2slv_addr[7];
 wire [7:0] data_mem_din   = mst2slv_data;
 wire [7:0] s_mem2mst_data = (data_mem_rd) ? data_mem[data_mem_addr] : 8'd0;
 
+assign dbg_stack_top = data_mem[SP];
+
 always @(posedge clk)
 begin
    if (data_mem_wr)
@@ -211,176 +219,176 @@ end
 
 
 //******************************************************************************
-//* LED periféria.                                                             *
-//* Címtartomány: 0x80 (írható/olvasható)                                      *
+//* LED perifï¿½ria.                                                             *
+//* Cï¿½mtartomï¿½ny: 0x80 (ï¿½rhatï¿½/olvashatï¿½)                                      *
 //******************************************************************************
 wire [7:0] s_led2mst_data;
 
 basic_owr #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h80)
 ) leds (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_led2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_led2mst_data),    //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_out(ld)                       //Az IO lábakra kiírandó adat
+   //A GPIO interfï¿½sz jelei.
+   .gpio_out(ld)                       //Az IO lï¿½bakra kiï¿½randï¿½ adat
 );
 
 
 //******************************************************************************
-//* DIP kapcsoló periféria.                                                    *
-//* Címtartomány: 0x81 (csak olvasható)                                        *
+//* DIP kapcsolï¿½ perifï¿½ria.                                                    *
+//* Cï¿½mtartomï¿½ny: 0x81 (csak olvashatï¿½)                                        *
 //******************************************************************************
 wire [7:0] s_dip2mst_data;
 
 basic_in #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h81)
 ) dip_switch (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_slv2mst_data(s_dip2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_slv2mst_data(s_dip2mst_data),    //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_in(sw)                        //Az IO lábak aktuális értéke
+   //A GPIO interfï¿½sz jelei.
+   .gpio_in(sw)                        //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
 );
 
 
 //******************************************************************************
-//* Idõzítõ periféria.                                                         *
-//* Címtartomány: 0x82 - 0x83 (írható/olvasható)                               *
+//* Idï¿½zï¿½tï¿½ perifï¿½ria.                                                         *
+//* Cï¿½mtartomï¿½ny: 0x82 - 0x83 (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_tmr2mst_data;
 wire       tmr_irq;
 
 basic_timer #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h82)
 ) timer (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_tmr2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_tmr2mst_data),    //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(tmr_irq)
 );
 
 
 //******************************************************************************
-//* Nyomógomb periféria.                                                       *
-//* Címtartomány: 0x84 - 0x87 (írható/olvasható)                               *
+//* Nyomï¿½gomb perifï¿½ria.                                                       *
+//* Cï¿½mtartomï¿½ny: 0x84 - 0x87 (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_btn2mst_data;
 wire       btn_irq;
 
 basic_in_irq #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h84)
 ) buttons (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_btn2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_btn2mst_data),    //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(btn_irq),
    
-   //A GPIO interfész jelei.
-   .gpio_in({4'd0, bt})                //Az IO lábak aktuális értéke
+   //A GPIO interfï¿½sz jelei.
+   .gpio_in({4'd0, bt})                //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
 );
 
 
 //******************************************************************************
-//* Slave USRT periféria.                                                      *
-//* Címtartomány: 0x88 - 0x8B (írható/olvasható)                               *
+//* Slave USRT perifï¿½ria.                                                      *
+//* Cï¿½mtartomï¿½ny: 0x88 - 0x8B (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_usrt2mst_data;
 wire       usrt_irq;
 
 slave_usrt #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h88)
 ) usrt (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A soros interfész jelei.
-   .usrt_clk(dev_clk),                 //USRT órajel
+   //A soros interfï¿½sz jelei.
+   .usrt_clk(dev_clk),                 //USRT ï¿½rajel
    .usrt_rxd(dev_mosi),                //Soros adatbemenet
    .usrt_txd(dev_miso),                //Soros adatkimenet
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_usrt2mst_data),   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_usrt2mst_data),   //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(usrt_irq)
 );
 
 
 //******************************************************************************
-//* Kijelzõ periféria.                                                         *
-//* Címtartomány: 0x90 - 0x9F (írható/olvasható)                               *
+//* Kijelzï¿½ perifï¿½ria.                                                         *
+//* Cï¿½mtartomï¿½ny: 0x90 - 0x9F (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_disp2mst_data;
 
 basic_display #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'h90)
 ) display (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_disp2mst_data),   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_disp2mst_data),   //Olvasï¿½si adatbusz
    
-   //A kijelzõk vezérléséhez szükséges jelek.
-   .seg_n(seg_n),                      //Szegmens vezérlõ jelek (aktív alacsony)
-   .dig_n(dig_n),                      //Digit kiválasztó jelek (aktív alacsony)
-   .col_n(col_n)                       //Oszlop kiválasztó jelek (aktív alacsony)
+   //A kijelzï¿½k vezï¿½rlï¿½sï¿½hez szï¿½ksï¿½ges jelek.
+   .seg_n(seg_n),                      //Szegmens vezï¿½rlï¿½ jelek (aktï¿½v alacsony)
+   .dig_n(dig_n),                      //Digit kivï¿½lasztï¿½ jelek (aktï¿½v alacsony)
+   .col_n(col_n)                       //Oszlop kivï¿½lasztï¿½ jelek (aktï¿½v alacsony)
 );
 
 
 //******************************************************************************
-//* GPIO (A bõvítõcsatlakozó).                                                 *
-//* Címtartomány: 0xA0 - 0xA3 (írható/olvasható) -> 7-14 kivezetések           *
-//* Címtartomány: 0xA4 - 0xA7 (írható/olvasható) -> 4-6, 15-16 kivezetések     *
+//* GPIO (A bï¿½vï¿½tï¿½csatlakozï¿½).                                                 *
+//* Cï¿½mtartomï¿½ny: 0xA0 - 0xA3 (ï¿½rhatï¿½/olvashatï¿½) -> 7-14 kivezetï¿½sek           *
+//* Cï¿½mtartomï¿½ny: 0xA4 - 0xA7 (ï¿½rhatï¿½/olvashatï¿½) -> 4-6, 15-16 kivezetï¿½sek     *
 //******************************************************************************
 wire [7:0]  s_ioa2mst_data;
 wire [7:0]  gpio_a_out;
@@ -391,48 +399,48 @@ wire [7:0]  gpio_a_ext_out;
 wire [7:0]  gpio_a_ext_dir;
 
 basic_io #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'ha0)
 ) gpio_a (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_ioa2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_ioa2mst_data),    //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_out(gpio_a_out),              //Az IO lábakra kiírandó adat
-   .gpio_in(aio[14:7]),                //Az IO lábak aktuális értéke
-   .gpio_dir(gpio_a_dir)               //A kimeneti meghajtó engedélyezõ jele
+   //A GPIO interfï¿½sz jelei.
+   .gpio_out(gpio_a_out),              //Az IO lï¿½bakra kiï¿½randï¿½ adat
+   .gpio_in(aio[14:7]),                //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
+   .gpio_dir(gpio_a_dir)               //A kimeneti meghajtï¿½ engedï¿½lyezï¿½ jele
 );
 
 basic_io #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'ha4)
 ) gpio_a_ext (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_ioae2mst_data),   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_ioae2mst_data),   //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_out(gpio_a_ext_out),          //Az IO lábakra kiírandó adat
-   .gpio_in({3'd0, ai, aio[6:4]}),     //Az IO lábak aktuális értéke
-   .gpio_dir(gpio_a_ext_dir)           //A kimeneti meghajtó engedélyezõ jele
+   //A GPIO interfï¿½sz jelei.
+   .gpio_out(gpio_a_ext_out),          //Az IO lï¿½bakra kiï¿½randï¿½ adat
+   .gpio_in({3'd0, ai, aio[6:4]}),     //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
+   .gpio_dir(gpio_a_ext_dir)           //A kimeneti meghajtï¿½ engedï¿½lyezï¿½ jele
 );
 
-//Az A bõvítõcsatlakozó kétirányú vonalainak meghajtása.
+//Az A bï¿½vï¿½tï¿½csatlakozï¿½ kï¿½tirï¿½nyï¿½ vonalainak meghajtï¿½sa.
 wire [14:4] aio_gpio_out = {gpio_a_out, gpio_a_ext_out[2:0]};
 wire [14:4] aio_gpio_dir = {gpio_a_dir, gpio_a_ext_dir[2:0]};
 
@@ -454,9 +462,9 @@ endgenerate
 
 
 //******************************************************************************
-//* GPIO (B bõvítõcsatlakozó).                                                 *
-//* Címtartomány: 0xA8 - 0xAB (írható/olvasható) -> 7-14 kivezetések           *
-//* Címtartomány: 0xAC - 0xAF (írható/olvasható) -> 4-6, 15-16 kivezetések     *
+//* GPIO (B bï¿½vï¿½tï¿½csatlakozï¿½).                                                 *
+//* Cï¿½mtartomï¿½ny: 0xA8 - 0xAB (ï¿½rhatï¿½/olvashatï¿½) -> 7-14 kivezetï¿½sek           *
+//* Cï¿½mtartomï¿½ny: 0xAC - 0xAF (ï¿½rhatï¿½/olvashatï¿½) -> 4-6, 15-16 kivezetï¿½sek     *
 //******************************************************************************
 wire [7:0]  s_iob2mst_data;
 wire [7:0]  gpio_b_out;
@@ -467,48 +475,48 @@ wire [7:0]  gpio_b_ext_out;
 wire [7:0]  gpio_b_ext_dir;
 
 basic_io #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'ha8)
 ) gpio_b (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_iob2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_iob2mst_data),    //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_out(gpio_b_out),              //Az IO lábakra kiírandó adat
-   .gpio_in(bio[14:7]),                //Az IO lábak aktuális értéke
-   .gpio_dir(gpio_b_dir)               //A kimeneti meghajtó engedélyezõ jele
+   //A GPIO interfï¿½sz jelei.
+   .gpio_out(gpio_b_out),              //Az IO lï¿½bakra kiï¿½randï¿½ adat
+   .gpio_in(bio[14:7]),                //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
+   .gpio_dir(gpio_b_dir)               //A kimeneti meghajtï¿½ engedï¿½lyezï¿½ jele
 );
 
 basic_io #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'hac)
 ) gpio_b_ext (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_iobe2mst_data),   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_iobe2mst_data),   //Olvasï¿½si adatbusz
    
-   //A GPIO interfész jelei.
-   .gpio_out(gpio_b_ext_out),          //Az IO lábakra kiírandó adat
-   .gpio_in({3'd0, bi, bio[6:4]}),     //Az IO lábak aktuális értéke
-   .gpio_dir(gpio_b_ext_dir)           //A kimeneti meghajtó engedélyezõ jele
+   //A GPIO interfï¿½sz jelei.
+   .gpio_out(gpio_b_ext_out),          //Az IO lï¿½bakra kiï¿½randï¿½ adat
+   .gpio_in({3'd0, bi, bio[6:4]}),     //Az IO lï¿½bak aktuï¿½lis ï¿½rtï¿½ke
+   .gpio_dir(gpio_b_ext_dir)           //A kimeneti meghajtï¿½ engedï¿½lyezï¿½ jele
 );
 
-//A B bõvítõcsatlakozó jeleinek meghajtása.
+//A B bï¿½vï¿½tï¿½csatlakozï¿½ jeleinek meghajtï¿½sa.
 wire [14:4] bio_out = {gpio_b_out, gpio_b_ext_out[2:0]};
 wire [14:4] bio_dir = {gpio_b_dir, gpio_b_ext_dir[2:0]};
 
@@ -523,72 +531,72 @@ endgenerate
 
 
 //******************************************************************************
-//* VGA interfész (A bõvítõcsatlakozó).                                        *
-//* Címtartomány: 0xB0 - 0xB7 (írható/olvasható)                               *
+//* VGA interfï¿½sz (A bï¿½vï¿½tï¿½csatlakozï¿½).                                        *
+//* Cï¿½mtartomï¿½ny: 0xB0 - 0xB7 (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_vga2mst_data;
 wire       vga_irq;
 
 vga_display #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'hb0)
 ) vga_display (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_vga2mst_data),    //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_vga2mst_data),    //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(vga_irq),
    
-   //A VGA interfész jelei.
-   .vga_enabled(vga_en),               //A VGA interfész engedélyezett
-   .rgb_out(aio_vga_out[5:0]),         //Szín adatok
-   .hsync_out(aio_vga_out[7]),         //Horizontális szinkronjel
-   .vsync_out(aio_vga_out[6])          //Vertikális szinkronjel
+   //A VGA interfï¿½sz jelei.
+   .vga_enabled(vga_en),               //A VGA interfï¿½sz engedï¿½lyezett
+   .rgb_out(aio_vga_out[5:0]),         //Szï¿½n adatok
+   .hsync_out(aio_vga_out[7]),         //Horizontï¿½lis szinkronjel
+   .vsync_out(aio_vga_out[6])          //Vertikï¿½lis szinkronjel
 );
 
 
 //******************************************************************************
-//* PS/2 billentyûzet interfész (A bõvítõcsatlakozó).                          *
-//* Címtartomány: 0xB8 - 0xB9 (írható/olvasható)                               *
+//* PS/2 billentyï¿½zet interfï¿½sz (A bï¿½vï¿½tï¿½csatlakozï¿½).                          *
+//* Cï¿½mtartomï¿½ny: 0xB8 - 0xB9 (ï¿½rhatï¿½/olvashatï¿½)                               *
 //******************************************************************************
 wire [7:0] s_kb2mst_data;
 wire       kb_irq;
 
 ps2_keyboard #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    .BASEADDR(8'hb8)
 ) ps2_keyboard (
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //A PS/2 interfész jelei.
-   .ps2_clk(aio[13]),                  //Órajel bemenet
+   //A PS/2 interfï¿½sz jelei.
+   .ps2_clk(aio[13]),                  //ï¿½rajel bemenet
    .ps2_data(aio[14]),                 //Soros adatbemenet
-   .ps2_enable(ps2_en),                //A PS/2 interfész engedélyezõ jele
+   .ps2_enable(ps2_en),                //A PS/2 interfï¿½sz engedï¿½lyezï¿½ jele
    
-   //A slave busz interfész jelei.
-   .s_mst2slv_addr(mst2slv_addr),      //Címbusz
-   .s_mst2slv_wr(mst2slv_wr),          //Írás engedélyezõ jel
-   .s_mst2slv_rd(mst2slv_rd),          //Olvasás engedélyezõ jel
-   .s_mst2slv_data(mst2slv_data),      //Írási adatbusz
-   .s_slv2mst_data(s_kb2mst_data),     //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   .s_mst2slv_addr(mst2slv_addr),      //Cï¿½mbusz
+   .s_mst2slv_wr(mst2slv_wr),          //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_rd(mst2slv_rd),          //Olvasï¿½s engedï¿½lyezï¿½ jel
+   .s_mst2slv_data(mst2slv_data),      //ï¿½rï¿½si adatbusz
+   .s_slv2mst_data(s_kb2mst_data),     //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    .irq(kb_irq)
 );
 
 
 //******************************************************************************
-//* Az olvasási adatbusz és a megszakításkérõ bemenet meghajtása.              *
+//* Az olvasï¿½si adatbusz ï¿½s a megszakï¿½tï¿½skï¿½rï¿½ bemenet meghajtï¿½sa.              *
 //******************************************************************************
 assign slv2mst_data = s_mem2mst_data  |
                       s_led2mst_data  |

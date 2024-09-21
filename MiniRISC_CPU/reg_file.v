@@ -10,6 +10,7 @@
 module reg_file(
    //�rajel.
    input  wire       clk,
+   input  wire       rst,
    
    //Az �r�si �s az X olvas�si port.
    input  wire [3:0] addr_x,        //A regiszter c�me
@@ -24,6 +25,8 @@ module reg_file(
    output wire [7:0] SP
 );
 
+`include "src\MiniRISC_CPU\control_defs.vh"
+
 //******************************************************************************
 //* A 16 x 8 bites elosztott RAM deklar�l�sa.                                  *
 //******************************************************************************
@@ -36,6 +39,9 @@ reg [7:0] reg_file_ram [15:0];
 //******************************************************************************
 always @(posedge clk)
 begin
+   if(rst)
+      reg_file_ram[SP_address] = 8'd127;
+
    if (write_en)
       reg_file_ram[addr_x] <= wr_data_x;
 end

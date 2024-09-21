@@ -235,13 +235,14 @@ begin
          STATE_INT_REQ : state <= STATE_FETCH;
 
 
-         STATE_STACK_OP: if(stack_op_end != 1'b1)
-                            state <= STATE_STACK_OP;
-                         else
-                            if(flag_ie && irq)
+         STATE_STACK_OP: if(stack_op_end)
+                           if(flag_ie && irq)
                               state <= STATE_INT_REQ;
                             else
                               state <= STATE_EX_CTRL;
+                         else
+                              state <= STATE_STACK_OP;
+                            
          
          //T�r�spont.
          STATE_BREAK   : if (dbg_continue)
