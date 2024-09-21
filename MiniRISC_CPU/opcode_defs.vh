@@ -247,7 +247,7 @@ localparam SHIFT_ROR  = 2'b11;
 //* JSR addr - Szubrutinh�v�s         (stack <- PC <- addr)                    *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1010 | m�velet|programmem�ria c�m|                                      *
+//*  | 1110 | m�velet|programmem�ria c�m|                                      *
 //*                                                                            *
 //* JMP (rY) - Felt�tel n�lk�li ugr�s (PC <- rY)                      B t�pus� *
 //* JZ  (rY) - Ugr�s, ha a Z flag 1   (PC <- rY, ha Z=1)              - - - -  *
@@ -261,7 +261,7 @@ localparam SHIFT_ROR  = 2'b11;
 //* JSR (rY) - Szubrutinh�v�s         (stack <- PC <- rY)                      *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
-//*  | 1111 | m�velet|  1010  |    rY   |                                      *
+//*  | 1111 | m�velet|  1110  |    rY   |                                      *
 //*                                                                            *
 //* RTS - Visszat�r�s szubrutinb�l    (PC <- stack)                   A t�pus� *
 //* RTI - Visszat�r�s megszak�t�sb�l  (PC,Z,C,N,V,IE <- stack)        - - - -  *
@@ -269,9 +269,9 @@ localparam SHIFT_ROR  = 2'b11;
 //* STI - Megszak�t�sok enged�lyez�se (IE <- 1)                                *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1010 | m�velet|     00000000     |                                      *
+//*  | 1110 | m�velet|     00000000     |                                      *
 //******************************************************************************
-localparam OPCODE_CTRL = 4'b1010;
+localparam OPCODE_CTRL = 4'1110;
 
 localparam CTRL_JMP = 4'b0000;
 localparam CTRL_JZ  = 4'b0001;
