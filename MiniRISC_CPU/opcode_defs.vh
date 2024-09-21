@@ -1,26 +1,26 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* Utasítás típusok:                                                          *
+//* Utasï¿½tï¿½s tï¿½pusok:                                                          *
 //*            |15....12|11..........8|7......4|3...........0|                 *
-//* -A típusú: | opkód  | rX/vezérlés |   8 bites konstans   |                 *
-//* -B típusú: |  1111  | rX/vezérlés | opkód  | rY/vezérlés |                 *
+//* -A tï¿½pusï¿½: | opkï¿½d  | rX/vezï¿½rlï¿½s |   8 bites konstans   |                 *
+//* -B tï¿½pusï¿½: |  1111  | rX/vezï¿½rlï¿½s | opkï¿½d  | rY/vezï¿½rlï¿½s |                 *
 //*                                                                            *
-//* A 4'b1111 prefix jelzi, hogy a második operandus nem konstans, hanem       *
-//* regiszter, tehát B típusú utasításról van szó.                             *
+//* A 4'b1111 prefix jelzi, hogy a mï¿½sodik operandus nem konstans, hanem       *
+//* regiszter, tehï¿½t B tï¿½pusï¿½ utasï¿½tï¿½srï¿½l van szï¿½.                             *
 //******************************************************************************
 localparam REG_OP_PREFIX = 4'b1111;
 
 
 //******************************************************************************
-//* MOV rX, addr                                                      A típusú *
-//* Adatmemória olvasás abszolút címzéssel: rX <- DMEM[addr]          - - - -  *
+//* MOV rX, addr                                                      A tï¿½pusï¿½ *
+//* Adatmemï¿½ria olvasï¿½s abszolï¿½t cï¿½mzï¿½ssel: rX <- DMEM[addr]          - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1101 |   rX   | adatmemória cím  |                                      *
+//*  | 1101 |   rX   | adatmemï¿½ria cï¿½m  |                                      *
 //*                                                                            *
-//* MOV rX, (rY)                                                      B típusú *
-//* Adatmemória olvasás indirekt címzéssel: rX <- DMEM[rY]            - - - -  *
+//* MOV rX, (rY)                                                      B tï¿½pusï¿½ *
+//* Adatmemï¿½ria olvasï¿½s indirekt cï¿½mzï¿½ssel: rX <- DMEM[rY]            - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1101  |    rY   |                                      *
@@ -29,14 +29,14 @@ localparam OPCODE_LD = 4'b1101;
 
 
 //******************************************************************************
-//* MOV addr, rX                                                      A típusú *
-//* Adatmemória írás abszolút címzéssel: DMEM[addr] <- rX             - - - -  *
+//* MOV addr, rX                                                      A tï¿½pusï¿½ *
+//* Adatmemï¿½ria ï¿½rï¿½s abszolï¿½t cï¿½mzï¿½ssel: DMEM[addr] <- rX             - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1001 |   rX   | adatmemória cím  |                                      *
+//*  | 1001 |   rX   | adatmemï¿½ria cï¿½m  |                                      *
 //*                                                                            *
-//* MOV (rY), rX                                                      B típusú *
-//* Adatmemória írás indirekt címzéssel: DMEM[rY] <- rX               - - - -  *
+//* MOV (rY), rX                                                      B tï¿½pusï¿½ *
+//* Adatmemï¿½ria ï¿½rï¿½s indirekt cï¿½mzï¿½ssel: DMEM[rY] <- rX               - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1001  |    rY   |                                      *
@@ -45,14 +45,14 @@ localparam OPCODE_ST = 4'b1001;
 
 
 //******************************************************************************
-//* MOV rX, #imm                                                      A típusú *
-//* Konstans betöltése regiszterbe: rX <- imm                         - - - -  *
+//* MOV rX, #imm                                                      A tï¿½pusï¿½ *
+//* Konstans betï¿½ltï¿½se regiszterbe: rX <- imm                         - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1100 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* MOV rX, rY                                                        B típusú *
-//* Adatmozgatás regiszterbõl regiszterbe: rX <- rY                   - - - -  *
+//* MOV rX, rY                                                        B tï¿½pusï¿½ *
+//* Adatmozgatï¿½s regiszterbï¿½l regiszterbe: rX <- rY                   - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1100  |    rY   |                                      *
@@ -61,38 +61,38 @@ localparam OPCODE_MOV = 4'b1100;
 
 
 //******************************************************************************
-//* ADD rX, #imm                                                      A típusú *
-//* Konstans hozzáadása regiszterhez átvitel nélkül: rX <- rX + imm   Z C N V  *
+//* ADD rX, #imm                                                      A tï¿½pusï¿½ *
+//* Konstans hozzï¿½adï¿½sa regiszterhez ï¿½tvitel nï¿½lkï¿½l: rX <- rX + imm   Z C N V  *
 //*                                                                            *
-//* ADC rX, #imm                                                      A típusú *
-//* Konstans hozzáadása regiszterhez átvitellel: rX <- rX + imm + C   Z C N V  *
+//* ADC rX, #imm                                                      A tï¿½pusï¿½ *
+//* Konstans hozzï¿½adï¿½sa regiszterhez ï¿½tvitellel: rX <- rX + imm + C   Z C N V  *
 //*                                                                            *
-//* SUB rX, #imm                                                      A típusú *
-//* Konstans kivonása regiszterbõl átvitel nélkül: rX <- rX - imm     Z C N V  *
+//* SUB rX, #imm                                                      A tï¿½pusï¿½ *
+//* Konstans kivonï¿½sa regiszterbï¿½l ï¿½tvitel nï¿½lkï¿½l: rX <- rX - imm     Z C N V  *
 //*                                                                            *
-//* SBC rX, #imm                                                      A típusú *
-//* Konstans kivonása regiszterbõl átvitellel: rX <- rX - imm + C     Z C N V  *
+//* SBC rX, #imm                                                      A tï¿½pusï¿½ *
+//* Konstans kivonï¿½sa regiszterbï¿½l ï¿½tvitellel: rX <- rX - imm + C     Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 00SC |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* ADD rX, rY                                                        B típusú *
-//* Regiszter hozzáadása regiszterhez átvitel nélkül: rX <- rX + rY   Z C N V  *
+//* ADD rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter hozzï¿½adï¿½sa regiszterhez ï¿½tvitel nï¿½lkï¿½l: rX <- rX + rY   Z C N V  *
 //*                                                                            *
-//* ADC rX, rY                                                        B típusú *
-//* Regiszter hozzáadása regiszterhez átvitellel: rX <- rX + rY + C   Z C N V  *
+//* ADC rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter hozzï¿½adï¿½sa regiszterhez ï¿½tvitellel: rX <- rX + rY + C   Z C N V  *
 //*                                                                            *
-//* SUB rX, rY                                                        B típusú *
-//* Regiszter kivonása regiszterbõl átvitel nélkül: rX <- rX - rY     Z C N V  *
+//* SUB rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter kivonï¿½sa regiszterbï¿½l ï¿½tvitel nï¿½lkï¿½l: rX <- rX - rY     Z C N V  *
 //*                                                                            *
-//* SBC rX, rY                                                        B típusú *
-//* Regiszter kivonása regiszterbõl átvitellel: rX <- rX - rY + C     Z C N V  *
+//* SBC rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter kivonï¿½sa regiszterbï¿½l ï¿½tvitellel: rX <- rX - rY + C     Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  00SC  |    rY   |                                      *
 //*                                                                            *
-//*  S: mûvelet kiválasztása (0: összeadás, 1: kivonás)                        *
-//*  C: átvitel kiválasztása (0: átvitel nélkül, 1: átvitellel)                *
+//*  S: mï¿½velet kivï¿½lasztï¿½sa (0: ï¿½sszeadï¿½s, 1: kivonï¿½s)                        *
+//*  C: ï¿½tvitel kivï¿½lasztï¿½sa (0: ï¿½tvitel nï¿½lkï¿½l, 1: ï¿½tvitellel)                *
 //******************************************************************************
 localparam OPCODE_ADD = 4'b0000;
 localparam OPCODE_ADC = 4'b0001;
@@ -101,14 +101,14 @@ localparam OPCODE_SBC = 4'b0011;
 
 
 //******************************************************************************
-//* CMP rX, #imm                                                      A típusú *
-//* Regiszter összehasonlítása konstanssal: rX - imm                  Z C N V  *
+//* CMP rX, #imm                                                      A tï¿½pusï¿½ *
+//* Regiszter ï¿½sszehasonlï¿½tï¿½sa konstanssal: rX - imm                  Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1010 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* CMP rX, rY                                                        B típusú *
-//* Regiszter összehasonlítása regiszterrel: rX - rY                  Z C N V  *
+//* CMP rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter ï¿½sszehasonlï¿½tï¿½sa regiszterrel: rX - rY                  Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1010  |    rY   |                                      *
@@ -117,37 +117,53 @@ localparam OPCODE_CMP = 4'b1010;
 
 
 //******************************************************************************
-//* AND rX, #imm                                                      A típusú *
-//* Bitenkénti ÉS konstanssal: rX <- rX & imm                         Z - N -  *
+//* CMP rX, #imm                                                      A tï¿½pusï¿½ *
+//* Regiszter ï¿½sszehasonlï¿½tï¿½sa konstanssal: rX - imm + C              Z C N V  *
 //*                                                                            *
-//* OR  rX, #imm                                                      A típusú *
-//* Bitenkénti VAGY konstanssal: rX <- rX | imm                       Z - N -  *
+//*  |15..12|11.....8|7................0|                                      *
+//*  | 1011 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* XOR rX, #imm                                                      A típusú *
-//* Bitenkénti XOR konstanssal: rX <- rX ^ imm                        Z - N -  *
+//* CMP rX, rY                                                        B tï¿½pusï¿½ *
+//* Regiszter ï¿½sszehasonlï¿½tï¿½sa regiszterrel: rX - rY + C              Z C N V  *
 //*                                                                            *
-//* SWP rX                                                            A típusú *
-//* Alsó/felsõ 4 bit felcserélése: rX <- {rX[3:0], rX[7:4]}           Z - N -  *
+//*  |15..12|11.....8|7......4|3.......0|                                      *
+//*  | 1111 |   rX   |  1011  |    rY   |                                      *
+//******************************************************************************
+localparam OPCODE_CMC = 4'b1011;
+
+
+//******************************************************************************
+//* AND rX, #imm                                                      A tï¿½pusï¿½ *
+//* Bitenkï¿½nti ï¿½S konstanssal: rX <- rX & imm                         Z - N -  *
+//*                                                                            *
+//* OR  rX, #imm                                                      A tï¿½pusï¿½ *
+//* Bitenkï¿½nti VAGY konstanssal: rX <- rX | imm                       Z - N -  *
+//*                                                                            *
+//* XOR rX, #imm                                                      A tï¿½pusï¿½ *
+//* Bitenkï¿½nti XOR konstanssal: rX <- rX ^ imm                        Z - N -  *
+//*                                                                            *
+//* SWP rX                                                            A tï¿½pusï¿½ *
+//* Alsï¿½/felsï¿½ 4 bit felcserï¿½lï¿½se: rX <- {rX[3:0], rX[7:4]}           Z - N -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 01AB |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* AND rX, rY                                                        B típusú *
-//* Bitenkénti ÉS regiszterrel: rX <- rX & rY                         Z - N -  *
+//* AND rX, rY                                                        B tï¿½pusï¿½ *
+//* Bitenkï¿½nti ï¿½S regiszterrel: rX <- rX & rY                         Z - N -  *
 //*                                                                            *
-//* OR  rX, rY                                                        B típusú *
-//* Bitenkénti VAGY regiszterrel: rX <- rX | rY                       Z - N -  *
+//* OR  rX, rY                                                        B tï¿½pusï¿½ *
+//* Bitenkï¿½nti VAGY regiszterrel: rX <- rX | rY                       Z - N -  *
 //*                                                                            *
-//* XOR rX, rY                                                        B típusú *
-//* Bitenkénti XOR regiszterrel: rX <- rX ^ rY                        Z - N -  *
+//* XOR rX, rY                                                        B tï¿½pusï¿½ *
+//* Bitenkï¿½nti XOR regiszterrel: rX <- rX ^ rY                        Z - N -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  01AB  |    rY   |                                      *
 //*                                                                            *
-//*  AB: mûvelet kiválasztása (00: ÉS, 01: VAGY, 10: XOR, 11: csere)           *
+//*  AB: mï¿½velet kivï¿½lasztï¿½sa (00: ï¿½S, 01: VAGY, 10: XOR, 11: csere)           *
 //*                                                                            *
-//*  Megjegyzés: a csere mûvelet csak A típusú utasításnál értelmezett,        *
-//*  B típusú utasításnál ez a mûveleti kód shiftelést/forgatást hajt végre.   *
+//*  Megjegyzï¿½s: a csere mï¿½velet csak A tï¿½pusï¿½ utasï¿½tï¿½snï¿½l ï¿½rtelmezett,        *
+//*  B tï¿½pusï¿½ utasï¿½tï¿½snï¿½l ez a mï¿½veleti kï¿½d shiftelï¿½st/forgatï¿½st hajt vï¿½gre.   *
 //******************************************************************************
 localparam OPCODE_AND = 4'b0100;
 localparam OPCODE_OR  = 4'b0101;
@@ -159,14 +175,14 @@ localparam LOGIC_XOR = 2'b10;
 
 
 //******************************************************************************
-//* TST rX, #imm                                                      A típusú *
-//* Bittesztelés konstanssal: rX & imm                                Z - N -  *
+//* TST rX, #imm                                                      A tï¿½pusï¿½ *
+//* Bittesztelï¿½s konstanssal: rX & imm                                Z - N -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1000 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* TST rX, rY                                                        B típusú *
-//* Bittesztelés regiszterrel: rX & rY                                Z - N -  *
+//* TST rX, rY                                                        B tï¿½pusï¿½ *
+//* Bittesztelï¿½s regiszterrel: rX & rY                                Z - N -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1000  |    rY   |                                      *
@@ -175,40 +191,40 @@ localparam OPCODE_TST = 4'b1000;
 
 
 //******************************************************************************
-//* SL0 rX                                                            B típusú *
-//* Shiftelés balra (0): rX <- {rX[6:0], 0}, C <- rX[7]               Z C N -  *
+//* SL0 rX                                                            B tï¿½pusï¿½ *
+//* Shiftelï¿½s balra (0): rX <- {rX[6:0], 0}, C <- rX[7]               Z C N -  *
 //*                                                                            *
-//* SL1 rX                                                            B típusú *
-//* Shiftelés balra (1): rX <- {rX[6:0], 1}, C <- rX[7]               Z C N -  *
+//* SL1 rX                                                            B tï¿½pusï¿½ *
+//* Shiftelï¿½s balra (1): rX <- {rX[6:0], 1}, C <- rX[7]               Z C N -  *
 //*                                                                            *
-//* SR0 rX                                                            B típusú *
-//* Shiftelés jobbra (0): rX <- {0, rX[7:1]}, C <- rX[0]              Z C N -  *
+//* SR0 rX                                                            B tï¿½pusï¿½ *
+//* Shiftelï¿½s jobbra (0): rX <- {0, rX[7:1]}, C <- rX[0]              Z C N -  *
 //*                                                                            *
-//* SR1 rX                                                            B típusú *
-//* Shiftelés jobbra (1): rX <- {1, rX[7:1]}, C <- rX[0]              Z C N -  *
+//* SR1 rX                                                            B tï¿½pusï¿½ *
+//* Shiftelï¿½s jobbra (1): rX <- {1, rX[7:1]}, C <- rX[0]              Z C N -  *
 //*                                                                            *
-//* ASR rX                                                            B típusú *
+//* ASR rX                                                            B tï¿½pusï¿½ *
 //* Aritmetikai shift jobbra: rX <- {rX[7], rX[7:1]}, C <- rX[0]      Z C N -  *
 //*                                                                            *
-//* ROL rX                                                            B típusú *
-//* Forgatás balra: rX <- {rX[6:0], rX[7]}, C <- rX[7]                Z C N -  *
+//* ROL rX                                                            B tï¿½pusï¿½ *
+//* Forgatï¿½s balra: rX <- {rX[6:0], rX[7]}, C <- rX[7]                Z C N -  *
 //*                                                                            *
-//* ROR rX                                                            B típusú *
-//* Forgatás jobbra: rX <- {rX[0], rX[7:1]}, C <- rX[0]               Z C N -  *
+//* ROR rX                                                            B tï¿½pusï¿½ *
+//* Forgatï¿½s jobbra: rX <- {rX[0], rX[7:1]}, C <- rX[0]               Z C N -  *
 //*                                                                            *
-//* RLC rX                                                            B típusú *
-//* Forgatás balra carry-vel: rX <- {rX[6:0], C}, C <- rX[7]          Z C N -  *
+//* RLC rX                                                            B tï¿½pusï¿½ *
+//* Forgatï¿½s balra carry-vel: rX <- {rX[6:0], C}, C <- rX[7]          Z C N -  *
 //*                                                                            *
-//* RRC rX                                                            B típusú *
-//* Forgatás jobbra carry-vel: rX <- {C, rX[7:1]}, C <- rX[0]         Z C N -  *
+//* RRC rX                                                            B tï¿½pusï¿½ *
+//* Forgatï¿½s jobbra carry-vel: rX <- {C, rX[7:1]}, C <- rX[0]         Z C N -  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  0111  |  AIRD   |                                      *
 //*                                                                            *
-//*  D: irány kiválasztása (0: balra, 1: jobbra)                               *
-//*  R: mûvelet kiválasztása (0: shiftelés, 1: forgatás)                       *
-//*  I: a beshiftelt bit értéke/kiválasztása (0: 0/kishiftelt bit, 1: 1/carry) *
-//*  A: a shiftelés típusa (0: normál, 1: aritmetikai)                         *
+//*  D: irï¿½ny kivï¿½lasztï¿½sa (0: balra, 1: jobbra)                               *
+//*  R: mï¿½velet kivï¿½lasztï¿½sa (0: shiftelï¿½s, 1: forgatï¿½s)                       *
+//*  I: a beshiftelt bit ï¿½rtï¿½ke/kivï¿½lasztï¿½sa (0: 0/kishiftelt bit, 1: 1/carry) *
+//*  A: a shiftelï¿½s tï¿½pusa (0: normï¿½l, 1: aritmetikai)                         *
 //******************************************************************************
 localparam OPCODE_SHIFT = 4'b0111;
 
@@ -219,43 +235,43 @@ localparam SHIFT_ROR  = 2'b11;
 
 
 //******************************************************************************
-//* JMP addr - Feltétel nélküli ugrás (PC <- addr)                    A típusú *
-//* JZ  addr - Ugrás, ha a Z flag 1   (PC <- addr, ha Z=1)            - - - -  *
-//* JNZ addr - Ugrás, ha a Z flag 0   (PC <- addr, ha Z=0)                     *
-//* JC  addr - Ugrás, ha a C flag 1   (PC <- addr, ha C=1)                     *
-//* JNC addr - Ugrás, ha a C flag 0   (PC <- addr, ha C=0)                     *
-//* JN  addr - Ugrás, ha az N flag 1  (PC <- addr, ha N=1)                     *
-//* JNN addr - Ugrás, ha az N flag 0  (PC <- addr, ha N=0)                     *
-//* JV  addr - Ugrás, ha a V flag 1   (PC <- addr, ha V=1)                     *
-//* JNV addr - Ugrás, ha a V flag 0   (PC <- addr, ha V=0)                     *
-//* JSR addr - Szubrutinhívás         (stack <- PC <- addr)                    *
+//* JMP addr - Feltï¿½tel nï¿½lkï¿½li ugrï¿½s (PC <- addr)                    A tï¿½pusï¿½ *
+//* JZ  addr - Ugrï¿½s, ha a Z flag 1   (PC <- addr, ha Z=1)            - - - -  *
+//* JNZ addr - Ugrï¿½s, ha a Z flag 0   (PC <- addr, ha Z=0)                     *
+//* JC  addr - Ugrï¿½s, ha a C flag 1   (PC <- addr, ha C=1)                     *
+//* JNC addr - Ugrï¿½s, ha a C flag 0   (PC <- addr, ha C=0)                     *
+//* JN  addr - Ugrï¿½s, ha az N flag 1  (PC <- addr, ha N=1)                     *
+//* JNN addr - Ugrï¿½s, ha az N flag 0  (PC <- addr, ha N=0)                     *
+//* JV  addr - Ugrï¿½s, ha a V flag 1   (PC <- addr, ha V=1)                     *
+//* JNV addr - Ugrï¿½s, ha a V flag 0   (PC <- addr, ha V=0)                     *
+//* JSR addr - Szubrutinhï¿½vï¿½s         (stack <- PC <- addr)                    *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1011 | mûvelet|programmemória cím|                                      *
+//*  | 1010 | mï¿½velet|programmemï¿½ria cï¿½m|                                      *
 //*                                                                            *
-//* JMP (rY) - Feltétel nélküli ugrás (PC <- rY)                      B típusú *
-//* JZ  (rY) - Ugrás, ha a Z flag 1   (PC <- rY, ha Z=1)              - - - -  *
-//* JNZ (rY) - Ugrás, ha a Z flag 0   (PC <- rY, ha Z=0)                       *
-//* JC  (rY) - Ugrás, ha a C flag 1   (PC <- rY, ha C=1)                       *
-//* JNC (rY) - Ugrás, ha a C flag 0   (PC <- rY, ha C=0)                       *
-//* JN  (rY) - Ugrás, ha az N flag 1  (PC <- rY, ha N=1)                       *
-//* JNN (rY) - Ugrás, ha az N flag 0  (PC <- rY, ha N=0)                       *
-//* JV  (rY) - Ugrás, ha a V flag 1   (PC <- rY, ha V=1)                       *
-//* JNV (rY) - Ugrás, ha a V flag 0   (PC <- rY, ha V=0)                       *
-//* JSR (rY) - Szubrutinhívás         (stack <- PC <- rY)                      *
+//* JMP (rY) - Feltï¿½tel nï¿½lkï¿½li ugrï¿½s (PC <- rY)                      B tï¿½pusï¿½ *
+//* JZ  (rY) - Ugrï¿½s, ha a Z flag 1   (PC <- rY, ha Z=1)              - - - -  *
+//* JNZ (rY) - Ugrï¿½s, ha a Z flag 0   (PC <- rY, ha Z=0)                       *
+//* JC  (rY) - Ugrï¿½s, ha a C flag 1   (PC <- rY, ha C=1)                       *
+//* JNC (rY) - Ugrï¿½s, ha a C flag 0   (PC <- rY, ha C=0)                       *
+//* JN  (rY) - Ugrï¿½s, ha az N flag 1  (PC <- rY, ha N=1)                       *
+//* JNN (rY) - Ugrï¿½s, ha az N flag 0  (PC <- rY, ha N=0)                       *
+//* JV  (rY) - Ugrï¿½s, ha a V flag 1   (PC <- rY, ha V=1)                       *
+//* JNV (rY) - Ugrï¿½s, ha a V flag 0   (PC <- rY, ha V=0)                       *
+//* JSR (rY) - Szubrutinhï¿½vï¿½s         (stack <- PC <- rY)                      *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
-//*  | 1111 | mûvelet|  1011  |    rY   |                                      *
+//*  | 1111 | mï¿½velet|  1010  |    rY   |                                      *
 //*                                                                            *
-//* RTS - Visszatérés szubrutinból    (PC <- stack)                   A típusú *
-//* RTI - Visszatérés megszakításból  (PC,Z,C,N,V,IE <- stack)        - - - -  *
-//* CLI - Megszakítások tiltása       (IE <- 0)                                *
-//* STI - Megszakítások engedélyezése (IE <- 1)                                *
+//* RTS - Visszatï¿½rï¿½s szubrutinbï¿½l    (PC <- stack)                   A tï¿½pusï¿½ *
+//* RTI - Visszatï¿½rï¿½s megszakï¿½tï¿½sbï¿½l  (PC,Z,C,N,V,IE <- stack)        - - - -  *
+//* CLI - Megszakï¿½tï¿½sok tiltï¿½sa       (IE <- 0)                                *
+//* STI - Megszakï¿½tï¿½sok engedï¿½lyezï¿½se (IE <- 1)                                *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1011 | mûvelet|     00000000     |                                      *
+//*  | 1010 | mï¿½velet|     00000000     |                                      *
 //******************************************************************************
-localparam OPCODE_CTRL = 4'b1011;
+localparam OPCODE_CTRL = 4'b1010;
 
 localparam CTRL_JMP = 4'b0000;
 localparam CTRL_JZ  = 4'b0001;

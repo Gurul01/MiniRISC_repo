@@ -153,6 +153,7 @@ begin
                             OPCODE_SUB  : state <= STATE_EX_ARITH;
                             OPCODE_SBC  : state <= STATE_EX_ARITH;
                             OPCODE_CMP  : state <= STATE_EX_ARITH;
+                            OPCODE_CMC  : state <= STATE_EX_ARITH;
                             
                             //Logikai mûveletek.
                             OPCODE_AND  : state <= STATE_EX_LOGIC;
