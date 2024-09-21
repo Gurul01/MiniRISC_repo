@@ -262,14 +262,6 @@ localparam SHIFT_ROR  = 2'b11;
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 | m�velet|  1110  |    rY   |                                      *
-//*                                                                            *
-//* RTS - Visszat�r�s szubrutinb�l    (PC <- stack)                   A t�pus� *
-//* RTI - Visszat�r�s megszak�t�sb�l  (PC,Z,C,N,V,IE <- stack)        - - - -  *
-//* CLI - Megszak�t�sok tilt�sa       (IE <- 0)                                *
-//* STI - Megszak�t�sok enged�lyez�se (IE <- 1)                                *
-//*                                                                            *
-//*  |15..12|11.....8|7................0|                                      *
-//*  | 1110 | m�velet|     00000000     |                                      *
 //******************************************************************************
 localparam OPCODE_CTRL = 4'1110;
 
@@ -283,6 +275,27 @@ localparam CTRL_JNN = 4'b0110;
 localparam CTRL_JV  = 4'b0111;
 localparam CTRL_JNV = 4'b1000;
 localparam CTRL_JSR = 4'b1001;
+//Signed
+localparam CTRL_JL  = 4'b1010; // Less Than            (<):  SF ≠ OF
+localparam CTRL_JLE = 4'b1011; // Less Than or Equal   (<=): ZF = 1 OR SF ≠ OF
+localparam CTRL_JH  = 4'b1100; // Higher Than          (>):  ZF = 0 AND SF = OF
+localparam CTRL_JHE = 4'b1101; // Higher Than or Equal (>=): SF = OF
+//Unsigned
+localparam CTRL_JSE = 4'b1110; // Less Than or Equal (<=): ZF = 1 OR CF = 1
+localparam CTRL_JG  = 4'b1111; // Greater Than       (>):  CF = 0 AND ZF = 0
+
+
+//******************************************************************************
+//* RTS - Visszat�r�s szubrutinb�l    (PC <- stack)                   B t�pus� *
+//* RTI - Visszat�r�s megszak�t�sb�l  (PC,Z,C,N,V,IE <- stack)        - - - -  *
+//* CLI - Megszak�t�sok tilt�sa       (IE <- 0)                                *
+//* STI - Megszak�t�sok enged�lyez�se (IE <- 1)                                *
+//*                                                                            *
+//*  |15..12|11.....8|7......4|3......0|                                       *
+//*  | 1111 | m�velet|  1111  |  0000  |                                       *
+//******************************************************************************
+localparam OPCODE_CTRL_NO_DATA = 4'b1111;
+
 localparam CTRL_RTS = 4'b1010;
 localparam CTRL_RTI = 4'b1011;
 localparam CTRL_CLI = 4'b1100;
