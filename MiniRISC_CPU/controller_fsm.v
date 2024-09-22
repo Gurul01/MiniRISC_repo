@@ -218,13 +218,10 @@ begin
                          else
                             state <= STATE_FETCH;
          
-         STATE_EX_CTRL : if (bus_grant)
-                           if (flag_ie && irq)
-                              state <= STATE_STACK_OP;
-                           else
-                              state <= STATE_FETCH;
-                         else
-                            state <= STATE_EX_CTRL;
+         STATE_EX_CTRL : if (flag_ie && irq)
+                            state <= STATE_STACK_OP;
+                        else
+                            state <= STATE_FETCH;
          
          STATE_EX_NOP  : if (flag_ie && irq)
                             state <= STATE_STACK_OP;
