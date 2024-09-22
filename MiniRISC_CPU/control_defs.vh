@@ -1,24 +1,24 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* A vezérléssel kapcsolatos konstansok.                                      *
+//* A vezï¿½rlï¿½ssel kapcsolatos konstansok.                                      *
 //******************************************************************************
 
 //******************************************************************************
-//* Reset és megszakítás vetorok. Az adott esemény esetén a megadott címre     *
-//* kerül a vezérlés.                                                          *
+//* Reset ï¿½s megszakï¿½tï¿½s vetorok. Az adott esemï¿½ny esetï¿½n a megadott cï¿½mre     *
+//* kerï¿½l a vezï¿½rlï¿½s.                                                          *
 //******************************************************************************
 localparam RST_VECTOR = 8'h00;      //Reset vektor
-localparam INT_VECTOR = 8'h01;      //Megszakítás vektor
+localparam INT_VECTOR = 8'h01;      //Megszakï¿½tï¿½s vektor
 
 
 //******************************************************************************
-//* ALU mûveletek.                                                             *
+//* ALU mï¿½veletek.                                                             *
 //******************************************************************************
-localparam ALU_MOVE  = 2'b00;       //Adatmozgatás
-localparam ALU_ARITH = 2'b01;       //Aritmetikai mûveletek
-localparam ALU_LOGIC = 2'b10;       //Bitenkénti logikai mûveletek
-localparam ALU_SHIFT = 2'b11;       //Shiftelés/forgatás
+localparam ALU_MOVE  = 2'b00;       //Adatmozgatï¿½s
+localparam ALU_ARITH = 2'b01;       //Aritmetikai mï¿½veletek
+localparam ALU_LOGIC = 2'b10;       //Bitenkï¿½nti logikai mï¿½veletek
+localparam ALU_SHIFT = 2'b11;       //Shiftelï¿½s/forgatï¿½s
 
 
 //******************************************************************************
@@ -28,5 +28,17 @@ localparam Z_FLAG  = 0;             //Zero flag
 localparam C_FLAG  = 1;             //Carry flag
 localparam N_FLAG  = 2;             //Negative flag
 localparam V_FLAG  = 3;             //Overflow flag
-localparam IE_FLAG = 4;             //Megszakítás engedélyezõ flag
-localparam IF_FLAG = 5;             //Megszakítás flag
+localparam IE_FLAG = 4;             //Megszakï¿½tï¿½s engedï¿½lyezï¿½ flag
+localparam IF_FLAG = 5;             //Megszakï¿½tï¿½s flag
+
+
+//******************************************************************************
+//* SP regiszter cime.                                                         *
+//******************************************************************************
+localparam SP_address = 4'b0000;
+
+//******************************************************************************
+//* PUSH es POP kodja                                                          *
+//******************************************************************************
+localparam PUSH = 1'b1;
+localparam POP  = 1'b0;

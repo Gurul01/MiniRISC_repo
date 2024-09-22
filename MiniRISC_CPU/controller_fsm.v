@@ -26,6 +26,10 @@ module controller_fsm(
    output wire       ex_call,          //Szubrutinh�v�s v�grehajt�sa
    output wire       ex_ret_sub,       //Visszat�r�s szubrutinb�l
    output wire       ex_ret_int,       //Visszat�r�s megszak�t�sb�l
+
+   output wire       stack_op_ongoing,
+   input  wire       stack_op_end,
+   output wire       push_or_pop,
    
    //Az adatstrukt�r�val kapcsolatos jelek.
    output wire       wr_data_sel,      //A regiszterbe �rand� adat kiv�laszt�sa
@@ -118,6 +122,7 @@ localparam STATE_EX_CTRL_NO_DATA = 4'd13;
 localparam STATE_EX_NOP   = 4'd10;  //Utas�t�s v�grehajt�s (nincs m�veletv�gz�s)
 localparam STATE_INT_REQ  = 4'd11;  //Megszak�t�sk�r�s kezel�se
 localparam STATE_BREAK    = 4'd12;  //T�r�spont
+localparam STATE_STACK_OP = 4'd14;
 
 //Az aktu�lis �llapotot t�rol� regiszter.
 reg [3:0] state;
@@ -169,11 +174,16 @@ begin
                                              state <= STATE_EX_LOGIC;
                             
                             //Programvez�rl�s.
-                            OPCODE_CTRL : state <= STATE_EX_CTRL;
+                            OPCODE_CTRL : if(ctrl_op == CTRL_JSR)
+                                             state <= STATE_STACK_OP;
+                                          else
+                                             state <= STATE_EX_CTRL;
 
-                            //Pragram allitas
-                            OPCODE_CTRL_NO_DATA : state <= STATE_EX_CTRL_NO_DATA;
-
+                           OPCODE_CTRL_NO_DATA : if((ctrl_op == CTRL_RTS) || (ctrl_op == CTRL_RTI))
+                                                   state <= STATE_STACK_OP;
+                                                 else
+                                                   state <= STATE_EX_CTRL_NO_DATA;
+                            
                             //Nincs m�veletv�gz�s.
                             default     : state <= STATE_EX_NOP;
                          endcase
@@ -181,7 +191,7 @@ begin
          //Utas�t�s v�grehajt�s.
          STATE_EX_LD   : if (bus_grant)
                             if (flag_ie && irq)
-                               state <= STATE_INT_REQ;
+                               state <= STATE_STACK_OP;
                             else
                                state <= STATE_FETCH;
                          else
@@ -189,49 +199,61 @@ begin
                             
          STATE_EX_ST   : if (bus_grant)
                             if (flag_ie && irq)
-                               state <= STATE_INT_REQ;
+                               state <= STATE_STACK_OP;
                             else
                                state <= STATE_FETCH;
                          else
                             state <= STATE_EX_ST;
          
          STATE_EX_MOV  : if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
          
          STATE_EX_ARITH: if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
          
          STATE_EX_LOGIC: if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
          
          STATE_EX_SHIFT: if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
          
          STATE_EX_CTRL : if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
-                         else
+                            state <= STATE_STACK_OP;
+                        else
                             state <= STATE_FETCH;
 
          STATE_EX_CTRL_NO_DATA : if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
          
          STATE_EX_NOP  : if (flag_ie && irq)
-                            state <= STATE_INT_REQ;
+                            state <= STATE_STACK_OP;
                          else
                             state <= STATE_FETCH;
                             
          //Megszak�t�sk�r�s kezel�se.
          STATE_INT_REQ : state <= STATE_FETCH;
+
+
+         STATE_STACK_OP: if(stack_op_end)
+                              if(flag_ie && irq)
+                                 state <= STATE_INT_REQ;
+                              else if(ctrl_op == CTRL_JSR)
+                                 state <= STATE_EX_CTRL;
+                              else if((ctrl_op == CTRL_RTS) || (ctrl_op == CTRL_RTI))
+                                 state <= STATE_EX_CTRL_NO_DATA;
+                         else
+                              state <= STATE_STACK_OP;
+                            
          
          //T�r�spont.
          STATE_BREAK   : if (dbg_continue)
@@ -300,6 +322,10 @@ begin
       ex_jump <= 1'b0;
 end
 
+assign stack_op_ongoing = (state == STATE_STACK_OP);
+
+assign push_or_pop = ((flag_ie && irq) || (ctrl_op == CTRL_JSR)) ? (PUSH) : (POP);
+
 //Szubrutinh�v�s jelz�se.
 assign ex_call    = (state == STATE_EX_CTRL) & (ctrl_op == CTRL_JSR);
 
@@ -352,10 +378,10 @@ end
 //* Az adatmem�ri�val kapcsolatos jelek.                                       *
 //******************************************************************************
 //Az adatmem�ria �r�s enged�lyez� jele.
-assign data_mem_wr = (dbg_is_brk) ? dbg_mem_wr : (state == STATE_EX_ST);
+assign data_mem_wr = (dbg_is_brk) ? dbg_mem_wr : ((state == STATE_EX_ST) || (stack_op_ongoing && (push_or_pop == PUSH)));
 
 //Az adatmem�ria olvas�s enged�lyez� jele.
-assign data_mem_rd = (dbg_is_brk) ? dbg_mem_rd : (state == STATE_EX_LD);
+assign data_mem_rd = (dbg_is_brk) ? dbg_mem_rd : ((state == STATE_EX_LD) || (stack_op_ongoing && (push_or_pop == POP)));
 
 //Busz hozz�f�r�s k�r�se.
 assign bus_req     = data_mem_wr | data_mem_rd;

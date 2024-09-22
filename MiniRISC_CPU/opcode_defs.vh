@@ -14,10 +14,10 @@ localparam REG_OP_PREFIX = 4'b1111;
 
 //******************************************************************************
 //* MOV rX, addr                                                      A t�pus� *
-//* Adatmem�ria olvas�s abszol�t c�mz�ssel: rX <- DMEM[addr]          - - - -  *
+//* Adatmem�ria olvas�s SP relativ c�mz�ssel: rX <- DMEM[offset + SP] - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1101 |   rX   | adatmem�ria c�m  |                                      *
+//*  | 1101 |   rX   |      offset      |                                      *
 //*                                                                            *
 //* MOV rX, (rY)                                                      B t�pus� *
 //* Adatmem�ria olvas�s indirekt c�mz�ssel: rX <- DMEM[rY]            - - - -  *
@@ -30,10 +30,10 @@ localparam OPCODE_LD = 4'b1101;
 
 //******************************************************************************
 //* MOV addr, rX                                                      A t�pus� *
-//* Adatmem�ria �r�s abszol�t c�mz�ssel: DMEM[addr] <- rX             - - - -  *
+//* Adatmem�ria �r�s SP relativ c�mz�ssel: DMEM[offset + SP] <- rX    - - - -  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
-//*  | 1001 |   rX   | adatmem�ria c�m  |                                      *
+//*  | 1001 |   rX   |     offset       |                                      *
 //*                                                                            *
 //* MOV (rY), rX                                                      B t�pus� *
 //* Adatmem�ria �r�s indirekt c�mz�ssel: DMEM[rY] <- rX               - - - -  *
@@ -296,8 +296,10 @@ localparam CTRL_JG  = 4'b1111; // Greater Than       (>):  CF = 0 AND ZF = 0
 //******************************************************************************
 localparam OPCODE_CTRL_NO_DATA = 4'b1111;
 
-localparam CTRL_RTS = 4'b1010;
-localparam CTRL_RTI = 4'b1011;
-localparam CTRL_CLI = 4'b1100;
-localparam CTRL_STI = 4'b1101;
+//Az OPCODE_CTRL alatt ertelmezett CTRL_JMP-nak megfelelo kod PROHIBITED statuszu az OPCODE_CTRL_NO_DATA alatt.
+localparam PROHIBITED = 4'b0000;
+localparam CTRL_RTS   = 4'b1010;
+localparam CTRL_RTI   = 4'b1011;
+localparam CTRL_CLI   = 4'b1100;
+localparam CTRL_STI   = 4'b1101;
 

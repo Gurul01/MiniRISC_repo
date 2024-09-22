@@ -3,52 +3,67 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* 16 x 8 bites regisztertömb egy írási és két olvasási porttal. Az írási     *
-//* port és az X olvasási port cím bemenete azonos. A megvalósítás elosztott   *
-//* memóriát használ.                                                          *
+//* 16 x 8 bites regisztertï¿½mb egy ï¿½rï¿½si ï¿½s kï¿½t olvasï¿½si porttal. Az ï¿½rï¿½si     *
+//* port ï¿½s az X olvasï¿½si port cï¿½m bemenete azonos. A megvalï¿½sï¿½tï¿½s elosztott   *
+//* memï¿½riï¿½t hasznï¿½l.                                                          *
 //******************************************************************************
 module reg_file(
-   //Órajel.
+   //ï¿½rajel.
    input  wire       clk,
+   input  wire       rst,
    
-   //Az írási és az X olvasási port.
-   input  wire [3:0] addr_x,        //A regiszter címe
-   input  wire       write_en,      //Írás engedélyezõ jel
-   input  wire [7:0] wr_data_x,     //A regiszterbe írandó adat
-   output wire [7:0] rd_data_x,     //A regiszterben tárolt adat
+   //Az ï¿½rï¿½si ï¿½s az X olvasï¿½si port.
+   input  wire [3:0] addr_x,        //A regiszter cï¿½me
+   input  wire       write_en,      //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   input  wire [7:0] wr_data_x,     //A regiszterbe ï¿½randï¿½ adat
+   output wire [7:0] rd_data_x,     //A regiszterben tï¿½rolt adat
    
-   //Az Y olvasási port.
-   input  wire [3:0] addr_y,        //A regiszter címe
-   output wire [7:0] rd_data_y      //A regiszterben tárolt adat
+   //Az Y olvasï¿½si port.
+   input  wire [3:0] addr_y,        //A regiszter cï¿½me
+   output wire [7:0] rd_data_y,     //A regiszterben tï¿½rolt adat
+
+   output wire [7:0] SP
 );
 
+`include "src\MiniRISC_CPU\control_defs.vh"
+
 //******************************************************************************
-//* A 16 x 8 bites elosztott RAM deklarálása.                                  *
+//* A 16 x 8 bites elosztott RAM deklarï¿½lï¿½sa.                                  *
 //******************************************************************************
 (* ram_style = "distributed" *)
 reg [7:0] reg_file_ram [15:0];
 
 
 //******************************************************************************
-//* Az írási port megvalósítása. Az írás szinkron módon történik.              *
+//* Az ï¿½rï¿½si port megvalï¿½sï¿½tï¿½sa. Az ï¿½rï¿½s szinkron mï¿½don tï¿½rtï¿½nik.              *
 //******************************************************************************
 always @(posedge clk)
 begin
+   if(rst)
+      reg_file_ram[SP_address] = 8'd127;
+
    if (write_en)
       reg_file_ram[addr_x] <= wr_data_x;
 end
 
 
 //******************************************************************************
-//* Az X olvasási port megvalósítása. Az olvasás aszinkron módon történik.     *
+//* Az X olvasï¿½si port megvalï¿½sï¿½tï¿½sa. Az olvasï¿½s aszinkron mï¿½don tï¿½rtï¿½nik.     *
 //******************************************************************************
 assign rd_data_x = reg_file_ram[addr_x];
 
 
 //******************************************************************************
-//* Az Y olvasási port megvalósítása. Az olvasás aszinkron módon történik.     *
+//* Az Y olvasï¿½si port megvalï¿½sï¿½tï¿½sa. Az olvasï¿½s aszinkron mï¿½don tï¿½rtï¿½nik.     *
 //******************************************************************************
 assign rd_data_y = reg_file_ram[addr_y];
+
+
+//******************************************************************************
+//* Az SP regiszter erteket folyamatosan elerhetove kell tenni.                *
+//* Az olvasï¿½s aszinkron mï¿½don tï¿½rtï¿½nik.                                       *
+//******************************************************************************
+assign SP = reg_file_ram[SP_address];
 
 
 endmodule

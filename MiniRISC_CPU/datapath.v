@@ -3,56 +3,59 @@
 //******************************************************************************
 //* MiniRISC CPU v2.0                                                          *
 //*                                                                            *
-//* A mûveleteket végrehajtó adatstruktúra.                                    *
+//* A mï¿½veleteket vï¿½grehajtï¿½ adatstruktï¿½ra.                                    *
 //******************************************************************************
 module datapath(
-   //Órajel.
+   //ï¿½rajel.
    input  wire       clk,
+   input  wire       rst,
    
-   //Az adatmemóriával kapcsolatos jelek.
-   output wire [7:0] data_mem_addr,    //Címbusz
-   input  wire [7:0] data_mem_din,     //Olvasási adatbusz
-   output wire [7:0] data_mem_dout,    //Írási adatbusz
+   //Az adatmemï¿½riï¿½val kapcsolatos jelek.
+   output wire [7:0] data_mem_addr,    //Cï¿½mbusz
+   input  wire [7:0] data_mem_din,     //Olvasï¿½si adatbusz
+   output wire [7:0] data_mem_dout,    //ï¿½rï¿½si adatbusz
    
-   //Az utasításban lévõ konstans adat.
+   //Az utasï¿½tï¿½sban lï¿½vï¿½ konstans adat.
    input  wire [7:0] const_data,
    
-   //A multiplexerek vezérlõ jelei.
-   input  wire       wr_data_sel,      //A regiszterbe írandó adat kiválasztása
-   input  wire       addr_op2_sel,     //Az ALU 2. operandusának kiválasztása
+   //A multiplexerek vezï¿½rlï¿½ jelei.
+   input  wire       wr_data_sel,      //A regiszterbe ï¿½randï¿½ adat kivï¿½lasztï¿½sa
+   input  wire       addr_op2_sel,     //Az ALU 2. operandusï¿½nak kivï¿½lasztï¿½sa
    
-   //A regisztertömbbel kapcsolatos jelek.
-   input  wire [3:0] reg_addr_x,       //Regiszter címe (X port)
-   input  wire [3:0] reg_addr_y,       //Regiszter címe (Y port)
-   input  wire       reg_wr_en,        //Írás engedélyezõ jel
+   //A regisztertï¿½mbbel kapcsolatos jelek.
+   input  wire [3:0] reg_addr_x,       //Regiszter cï¿½me (X port)
+   input  wire [3:0] reg_addr_y,       //Regiszter cï¿½me (Y port)
+   input  wire       reg_wr_en,        //ï¿½rï¿½s engedï¿½lyezï¿½ jel
    
    //Az ALU-val kapcsolatos jelek.
-   input  wire [1:0] alu_op_type,      //ALU mûvelet kiválasztó jel
-   input  wire [1:0] alu_arith_sel,    //Aritmetikai mûvelet kiválasztó jel
-   input  wire [1:0] alu_logic_sel,    //Logikai mûvelet kiválasztó jel
-   input  wire [3:0] alu_shift_sel,    //Shiftelési mûvelet kiválasztó jel
-   input  wire [3:0] alu_flag_din,     //A flag-ekbe írandó érték
-   input  wire       alu_flag_wr,      //A flag-ek írás engedélyezõ jele
+   input  wire [1:0] alu_op_type,      //ALU mï¿½velet kivï¿½lasztï¿½ jel
+   input  wire [1:0] alu_arith_sel,    //Aritmetikai mï¿½velet kivï¿½lasztï¿½ jel
+   input  wire [1:0] alu_logic_sel,    //Logikai mï¿½velet kivï¿½lasztï¿½ jel
+   input  wire [3:0] alu_shift_sel,    //Shiftelï¿½si mï¿½velet kivï¿½lasztï¿½ jel
+   input  wire [3:0] alu_flag_din,     //A flag-ekbe ï¿½randï¿½ ï¿½rtï¿½k
+   input  wire       alu_flag_wr,      //A flag-ek ï¿½rï¿½s engedï¿½lyezï¿½ jele
    output wire       alu_flag_z,       //Zero flag
    output wire       alu_flag_c,       //Carry flag
    output wire       alu_flag_n,       //Negative flag
    output wire       alu_flag_v,       //Overflow flag
    
-   //A programszámláló új értéke ugrás esetén.
+   //A programszï¿½mlï¿½lï¿½ ï¿½j ï¿½rtï¿½ke ugrï¿½s esetï¿½n.
    output wire [7:0] jump_address,
+
+   output wire [7:0] SP,
    
-   //A debug interfész jelei.
-   input  wire [7:0] dbg_addr_in,      //Cím bemenet
+   //A debug interfï¿½sz jelei.
+   input  wire [7:0] dbg_addr_in,      //Cï¿½m bemenet
    input  wire [7:0] dbg_data_in,      //Adatbemenet
-   input  wire       dbg_is_brk,       //A töréspont állapot jelzése
-   output wire [7:0] dbg_reg_dout      //A regisztertömbbõl beolvasott adat
+   input  wire       dbg_is_brk,       //A tï¿½rï¿½spont ï¿½llapot jelzï¿½se
+   output wire [7:0] dbg_reg_dout      //A regisztertï¿½mbbï¿½l beolvasott adat
 );
 
 //******************************************************************************
-//* A regiszterömbbe írandó adatot kiválasztó multiplexer.                     *
+//* A regiszterï¿½mbbe ï¿½randï¿½ adatot kivï¿½lasztï¿½ multiplexer.                     *
 //******************************************************************************
-wire [7:0] alu_result;                 //Az ALU mûvelet eredménye.
-reg  [7:0] reg_wr_data;                //A regisztertömbbe írandó adat.
+wire [7:0] alu_result;                 //Az ALU mï¿½velet eredmï¿½nye.
+reg  [7:0] reg_wr_data;                //A regisztertï¿½mbbe ï¿½randï¿½ adat.
 
 always @(*)
 begin
@@ -65,69 +68,73 @@ end
 
 
 //******************************************************************************
-//* A regisztertömb.                                                           *
+//* A regisztertï¿½mb.                                                           *
 //******************************************************************************
 wire [7:0] reg_rd_data_x;
 wire [7:0] reg_rd_data_y;
 wire [3:0] address_x = (dbg_is_brk) ? dbg_addr_in[3:0] : reg_addr_x;
 
 reg_file reg_file(
-   //Órajel.
+   //ï¿½rajel.
    .clk(clk),
+   .rst(rst),
    
-   //Az írási és az X olvasási port.
-   .addr_x(address_x),                 //A regiszter címe
-   .write_en(reg_wr_en),               //Írás engedélyezõ jel
-   .wr_data_x(reg_wr_data),            //A regiszterbe írandó adat
-   .rd_data_x(reg_rd_data_x),          //A regiszterben tárolt adat
+   //Az ï¿½rï¿½si ï¿½s az X olvasï¿½si port.
+   .addr_x(address_x),                 //A regiszter cï¿½me
+   .write_en(reg_wr_en),               //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .wr_data_x(reg_wr_data),            //A regiszterbe ï¿½randï¿½ adat
+   .rd_data_x(reg_rd_data_x),          //A regiszterben tï¿½rolt adat
    
-   //Az Y olvasási port.
-   .addr_y(reg_addr_y),                //A regiszter címe
-   .rd_data_y(reg_rd_data_y)           //A regiszterben tárolt adat
+   //Az Y olvasï¿½si port.
+   .addr_y(reg_addr_y),                //A regiszter cï¿½me
+   .rd_data_y(reg_rd_data_y)           //A regiszterben tï¿½rolt adat
+
+   //SP olvasasa mindig elerheto
+   .SP(SP)
 );
 
-//A memória írási adatbuszának meghajtása.
+//A memï¿½ria ï¿½rï¿½si adatbuszï¿½nak meghajtï¿½sa.
 assign data_mem_dout = (dbg_is_brk) ? dbg_data_in : reg_rd_data_x;
 
-//A regisztertömbbõl beolvasott adat a debug interfész felé.
+//A regisztertï¿½mbbï¿½l beolvasott adat a debug interfï¿½sz felï¿½.
 assign dbg_reg_dout  = reg_rd_data_x;
 
 
 //******************************************************************************
-//* Az ALU 2. operandusát és a memóriacímet kiválasztó multiplexer.            *
-//* -addr_op2_sel=0: konstans / abszolút címzés                                *
-//* -addr_op2_sel=1: regiszter / indirekt címzés                               *
+//* Az ALU 2. operandusï¿½t ï¿½s a memï¿½riacï¿½met kivï¿½lasztï¿½ multiplexer.            *
+//* -addr_op2_sel=0: konstans / abszolï¿½t cï¿½mzï¿½s                                *
+//* -addr_op2_sel=1: regiszter / indirekt cï¿½mzï¿½s                               *
 //******************************************************************************
 wire [7:0] alu_operand2 = (addr_op2_sel) ? reg_rd_data_y : const_data;
 
-//A memória címbuszának meghajtása.
+//A memï¿½ria cï¿½mbuszï¿½nak meghajtï¿½sa.
 assign data_mem_addr    = (dbg_is_brk)   ? dbg_addr_in   : alu_operand2;
 
-//A programszámláló új értéke ugrás esetén.
+//A programszï¿½mlï¿½lï¿½ ï¿½j ï¿½rtï¿½ke ugrï¿½s esetï¿½n.
 assign jump_address     = alu_operand2;
 
 
 //******************************************************************************
-//* Az aritmetikai-logikai egység (ALU).                                       *
+//* Az aritmetikai-logikai egysï¿½g (ALU).                                       *
 //******************************************************************************
 alu alu(
-   //Órajel.
+   //ï¿½rajel.
    .clk(clk),
    
-   //Vezérlõ bemenetek.
-   .op_type(alu_op_type),              //Az ALU mûvelet típusát kiválasztó jel
-   .arith_sel(alu_arith_sel),          //Az aritmetikai mûveletet kiválasztó jel
-   .logic_sel(alu_logic_sel),          //A logikai mûveletet kiválasztó jel
-   .shift_sel(alu_shift_sel),          //A shiftelési mûveletet kiválasztó jel
+   //Vezï¿½rlï¿½ bemenetek.
+   .op_type(alu_op_type),              //Az ALU mï¿½velet tï¿½pusï¿½t kivï¿½lasztï¿½ jel
+   .arith_sel(alu_arith_sel),          //Az aritmetikai mï¿½veletet kivï¿½lasztï¿½ jel
+   .logic_sel(alu_logic_sel),          //A logikai mï¿½veletet kivï¿½lasztï¿½ jel
+   .shift_sel(alu_shift_sel),          //A shiftelï¿½si mï¿½veletet kivï¿½lasztï¿½ jel
    
-   //Az operandusok és az eredmény.
-   .operand1(reg_rd_data_x),           //Elsõ operandus
-   .operand2(alu_operand2),            //Második operandus
-   .result(alu_result),                //Az ALU mûvelet eredménye
+   //Az operandusok ï¿½s az eredmï¿½ny.
+   .operand1(reg_rd_data_x),           //Elsï¿½ operandus
+   .operand2(alu_operand2),            //Mï¿½sodik operandus
+   .result(alu_result),                //Az ALU mï¿½velet eredmï¿½nye
    
-   //ALU feltétel jelek.
-   .flag_din(alu_flag_din),            //A flag-ekbe írandó érték
-   .flag_wr(alu_flag_wr),              //A flag-ek írás engedélyezõ jele
+   //ALU feltï¿½tel jelek.
+   .flag_din(alu_flag_din),            //A flag-ekbe ï¿½randï¿½ ï¿½rtï¿½k
+   .flag_wr(alu_flag_wr),              //A flag-ek ï¿½rï¿½s engedï¿½lyezï¿½ jele
    .flag_z(alu_flag_z),                //Zero flag
    .flag_c(alu_flag_c),                //Carry flag
    .flag_n(alu_flag_n),                //Negative flag

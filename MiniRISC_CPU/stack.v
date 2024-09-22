@@ -1,64 +1,99 @@
 `timescale 1ns / 1ps
 
-//******************************************************************************
-//* MiniRISC CPU v2.0                                                          *
-//*                                                                            *
-//* 16 szó mélységû HW verem a programszámláló és az ALU flag-ek elmentéséhez  *
-//* szubrutinhívás, illetve megszakításkérés esetén. A megvalósítás elosztott  *
-//* memóriát használ.                                                          *
-//******************************************************************************
-module stack #(
-   //Az adat szélessége bitekben.
-   parameter DATA_WIDTH = 8
-) (
-   //Órajel.
-   input  wire                  clk,
-   
-   //Adatvonalak.
-   input  wire [DATA_WIDTH-1:0] data_in,     //A verembe írandó adat
-   output wire [DATA_WIDTH-1:0] data_out,    //A verem tetején lévõ adat
-   
-   //Vezérlõ bemenetek.
-   input  wire                  push,        //Adat írása a verembe
-   input  wire                  pop          //Adat olvasása a verembõl
+module stack(
+  input  wire clk,
+  input  wire rst,
+
+  input  wire stack_op_ongoing,
+  input  wire push_or_pop,
+  output wire stack_op_end,
+
+  input  wire bus_grant,
+
+  output reg  [7:0] data_mem_addr,
+  inout  wire [7:0] data_mem_din,
+  output reg  [7:0] data_mem_dout,
+
+  input  wire [7:0] SP,
+  output reg  [7:0] SP_out,
+    
+  input  wire [7:0] data_in_PC,
+  input  wire [5:0] data_in_flags, 
+
+  output reg  [5:0] data_out_flags,
+  output reg  [7:0] data_out_PC,
 );
 
-//******************************************************************************
-//* Írási címszámláló. PUSH mûvelet esetén az értékét növeljük, POP mûvelet    *
-//* esetén az értékét csökkentjük.                                             *
-//******************************************************************************
-reg [3:0] wr_address;
+localparam state_NOP       = 4'd0;
+localparam state_PUSH_flag = 4'd1;
+localparam state_PUSH_PC   = 4'd2;
+localparam state_POP_PC    = 4'd3;
+localparam state_POP_flags = 4'd4
+localparam state_END_OF_OP = 4'd5;
+
+assign stack_op_end = (state == state_END_OF_OP);
+
+//A stack-et vezerlo allapotgep
+reg [2:0] state = state_NOP;
+
+always @(*)
+begin
+   if(state == state_PUSH_flag)
+      data_mem_addr <= SP - 8'd1;
+      data_mem_dout <= {2'b0, data_in_flags};
+   else if(state == state_PUSH_PC)
+      data_mem_addr <= SP - 8'd2;
+      data_mem_dout <= data_in_PC;
+
+   else if(state == state_POP_PC)
+      data_mem_addr <= SP;
+   else if(state == state_POP_flags)
+      data_mem_addr <= SP + 8'd1;
+end
 
 always @(posedge clk)
 begin
-   if (push)
-      wr_address <= wr_address + 4'd1;
+  if (rst)
+      state <= state_NOP;
    else
-      if (pop)
-         wr_address <= wr_address - 4'd1;
+      case (state)
+        state_NOP    : if(stack_op_ongoing)
+                          if(push_or_pop == PUSH)
+                              SP_out <= SP - 8'd2;
+                              state <= state_PUSH_flag;
+                          else
+                              SP_out <= SP + 8'd2;
+                              state <= state_POP;
+                       else
+                          state <= state_NOP;
+
+        state_PUSH_flag: if(bus_grant)
+                          state <= state_PUSH_PC;
+                       else
+                          state <= state_PUSH_flag;
+
+        state_PUSH_PC  : if(bus_grant)
+                          state <= state_END_OF_OP;
+                       else
+                          state <= state_PUSH_PC;
+
+        state_POP_PC : if(bus_grant)
+                          data_out_PC <= data_mem_din;
+                          state <= state_POP_flags;
+                       else
+                          state <= state_POP_PC;
+
+        state_POP_flags: if(bus_grant)
+                          data_out_flags <= data_mem_din;
+                          state <= state_END_OF_OP;
+                       else
+                          state <= state_POP_flags;
+
+        state_END_OF_OP: state <= state_NOP;
+          
+        //ï¿½rvï¿½nytelen ï¿½llapotok.
+        default       : state <= state_NOP;
+      endcase
 end
-
-
-//******************************************************************************
-//* Az írási címbõl egyet kivonva megkapjuk az olvasási címet.                 *
-//******************************************************************************
-wire [3:0] rd_address = wr_address - 4'd1;
-
-
-//******************************************************************************
-//* A 16 x DATA_WIDTH bites elosztott RAM. PUSH mûvelet esetén beírjuk az      *
-//* adatot a memóriába.                                                        *
-//******************************************************************************
-(* ram_style = "distributed" *)
-reg [DATA_WIDTH-1:0] stack_ram [15:0];
-
-always @(posedge clk)
-begin
-   if (push)
-      stack_ram[wr_address] <= data_in;
-end
-
-assign data_out = stack_ram[rd_address];
-
 
 endmodule
