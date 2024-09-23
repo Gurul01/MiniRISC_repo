@@ -40,9 +40,8 @@ reg [7:0] reg_file_ram [15:0];
 always @(posedge clk)
 begin
    if(rst)
-      reg_file_ram[SP_address] = 8'd127;
-
-   if (write_en)
+      reg_file_ram[SP_address] <= 8'd127;
+   else if (write_en)
       reg_file_ram[addr_x] <= wr_data_x;
 end
 
