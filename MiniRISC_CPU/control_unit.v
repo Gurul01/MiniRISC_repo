@@ -59,6 +59,8 @@ module control_unit(
    output wire       stack_op_ongoing,
    input  wire       stack_op_end,
    output wire       push_or_pop,
+
+   input  wire       SP,
    
    //A debug interf�sz jelei.
    input  wire [7:0]  dbg_data_in,     //Adatbemenet
@@ -78,8 +80,6 @@ module control_unit(
 
 `include "src\MiniRISC_CPU\control_defs.vh"
 `include "src\MiniRISC_CPU\opcode_defs.vh"
-
-reg jump_addr_ret;
 
 //******************************************************************************
 //* Vez�rl� jelek.                                                             *
@@ -107,7 +107,7 @@ begin
             pc <= dbg_data_in;         //A debug modul �rja a programsz�ml�l�t
          else
             if (ex_jump || ex_call)
-               pc <= jump_addr_ret;        //Az ugr�si c�m bet�lt�se
+               pc <= jump_addr;        //Az ugr�si c�m bet�lt�se
             else
                if (ex_ret_sub || ex_ret_int)
                   pc <= return_addr;   //A visszat�r�si c�m bet�lt�se

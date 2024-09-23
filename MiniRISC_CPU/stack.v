@@ -72,7 +72,7 @@ begin
                           end
                           else begin
                               SP_out <= SP + 8'd2;
-                              state <= state_POP;
+                              state <= state_POP_PC;
                           end
                        end
                        else
