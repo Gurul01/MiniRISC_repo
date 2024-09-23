@@ -76,8 +76,8 @@ module control_unit(
    output wire        dbg_flag_if      //Megyszak�t�s flag (IF)
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
-`include "src\MiniRISC_CPU\opcode_defs.vh"
+`include "control_defs.vh"
+`include "opcode_defs.vh"
 
 reg jump_addr_ret;
 

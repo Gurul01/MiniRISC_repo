@@ -64,8 +64,8 @@ module controller_fsm(
    output wire       dbg_is_brk        //A t�r�spont �llapot jelz�se
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
-`include "src\MiniRISC_CPU\opcode_defs.vh"
+`include "control_defs.vh"
+`include "opcode_defs.vh"
 
 //******************************************************************************
 //* Megyszak�t�s enged�lyez� flag (IE).                                        *
