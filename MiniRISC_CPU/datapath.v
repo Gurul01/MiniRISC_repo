@@ -87,7 +87,7 @@ reg_file reg_file(
    
    //Az Y olvas�si port.
    .addr_y(reg_addr_y),                //A regiszter c�me
-   .rd_data_y(reg_rd_data_y)           //A regiszterben t�rolt adat
+   .rd_data_y(reg_rd_data_y),           //A regiszterben t�rolt adat
 
    //SP olvasasa mindig elerheto
    .SP(SP)

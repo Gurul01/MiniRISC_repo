@@ -47,8 +47,8 @@ module control_unit(
    //Ugr�si c�m az adatstrukt�r�t�l.
    input  wire [7:0]  jump_addr,
 
-   output reg  [7:0] pc;               //Programsz�ml�l� regiszter
-   input  wire [7:0] return_addr;   
+   output reg  [7:0] pc,               
+   input  wire [7:0] return_addr,   
 
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    input  wire        irq,
@@ -73,7 +73,7 @@ module control_unit(
    output wire        dbg_int_req,     //A megszak�t�s kiszolg�l�s�nak jelz�se
    output wire        dbg_is_brk,      //A t�r�spont �llapot jelz�se
    output wire        dbg_flag_ie,     //Megyszak�t�s enged�lyez� flag (IE)
-   output wire        dbg_flag_if,     //Megyszak�t�s flag (IF)
+   output wire        dbg_flag_if      //Megyszak�t�s flag (IF)
 );
 
 `include "src\MiniRISC_CPU\control_defs.vh"

@@ -112,8 +112,8 @@ minirisc_cpu minirisc_cpu(
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    .irq(irq),
 
-   .SP(SP);
-   .dbg_stack_top(dbg_stack_top);
+   .SP(SP),
+   .dbg_stack_top(dbg_stack_top),
    
    //Debug interf�sz.
    .dbg2cpu_data(dbg2cpu_data),        //Jelek a debug modult�l a CPU fel�

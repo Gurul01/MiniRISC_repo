@@ -24,8 +24,8 @@ module minirisc_cpu(
    //Megszak�t�sk�r� bemenet (akt�v magas szint�rz�keny).
    input  wire        irq,
 
-   output wire [7:0] SP;
-   input  wire [7:0] dbg_stack_top;
+   output wire [7:0] SP,
+   input  wire [7:0] dbg_stack_top,
    
    //Debug interf�sz.
    input  wire [22:0] dbg2cpu_data,    //Jelek a debug modult�l a CPU fel�
