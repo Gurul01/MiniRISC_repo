@@ -312,10 +312,10 @@ begin
          CTRL_JNV: ex_jump <= ~alu_flag_v;
          CTRL_JL : ex_jump <= (alu_flag_n != alu_flag_v);
          CTRL_JLE: ex_jump <= ((alu_flag_z == 1) || (alu_flag_n != alu_flag_v));
-         CTRL_JH : ex_jump <= ((alu_flag_z == 0) || (alu_flag_n == alu_flag_v));
+         CTRL_JH : ex_jump <= ((alu_flag_z == 0) && (alu_flag_n == alu_flag_v));
          CTRL_JHE: ex_jump <= (alu_flag_n == alu_flag_v);
          CTRL_JSE: ex_jump <= ((alu_flag_z == 1) || (alu_flag_c == 1));
-         CTRL_JG : ex_jump <= ((alu_flag_z == 0) || (alu_flag_c == 0));
+         CTRL_JG : ex_jump <= ((alu_flag_z == 0) && (alu_flag_c == 0));
          default : ex_jump <= 1'b0;
       endcase
    else

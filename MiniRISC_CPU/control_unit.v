@@ -60,7 +60,7 @@ module control_unit(
    input  wire       stack_op_end,
    output wire       push_or_pop,
 
-   input  wire       SP,
+   input  wire [7:0] SP,
    
    //A debug interf�sz jelei.
    input  wire [7:0]  dbg_data_in,     //Adatbemenet

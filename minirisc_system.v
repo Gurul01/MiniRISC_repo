@@ -99,8 +99,51 @@ minirisc_cpu minirisc_cpu(
 reg [15:0] prg_mem [255:0];
 
 initial begin
-   prg_mem[0] = 16'hE005;
-   prg_mem[5] = 16'hE000;
+   prg_mem[0] = 16'hCB01; // MOV R11 1
+   prg_mem[1] = 16'hF1DB; // LD  R1  R11
+   prg_mem[2] = 16'hCC02; // MOV R12 2
+
+      prg_mem[3] = 16'h2001;
+      prg_mem[4] = 16'hCEFA;
+      prg_mem[5] = 16'h9E00;
+
+prg_mem[6] = 16'hCC91;
+prg_mem[7] = 16'hACEF;
+prg_mem[8] = 16'hEC0D;
+prg_mem[9] = 16'hED0D;
+prg_mem[10] = 16'hEA0D;
+
+prg_mem[13] = 16'hCD6F;
+prg_mem[14] = 16'hAD6F;
+prg_mem[15] = 16'hEF13;
+prg_mem[16] = 16'hEE13;
+
+   prg_mem[3 +16] = 16'hF2DC; // LD  R2  R12
+   prg_mem[4 +16] = 16'hCD03; // MOV R13 3
+   prg_mem[5 +16] = 16'hF3DD; // LD  R3  R133
+   
+   prg_mem[6 +16] = 16'hA1D3;
+   prg_mem[7 +16] = 16'hA100;
+   prg_mem[8 +16] = 16'hF3A1;
+   
+   prg_mem[9 +16]  = 16'hF2A1;
+   prg_mem[10+16] = 16'hF1B3;
+   prg_mem[11+16] = 16'hB3D3;
+   prg_mem[12+16] = 16'hB178;
+   
+   prg_mem[13+16] = 16'hF1A3;
+   prg_mem[14+16] = 16'hF3B1;
+   prg_mem[15+16] = 16'hB1D3;
+   prg_mem[16+16] = 16'hB3D3;
+   prg_mem[17+16] = 16'hF2B1;
+   /*
+   prg_mem[18] = 16'h0000;
+   prg_mem[19] = 16'h0000;
+   prg_mem[20] = 16'h0000;
+   prg_mem[21] = 16'h0000;
+   prg_mem[22] = 16'h0000;
+   prg_mem[23] = 16'h0000;
+   */
 end
 
 /* always @(posedge clk)
@@ -120,8 +163,9 @@ assign prgmem2cpu_data = prg_mem[cpu2prgmem_addr];
 reg  [7:0] data_mem [127:0];
 
 initial begin
-   data_mem[0] = 8'hBB;
-   data_mem[1] = 8'hBA;
+   data_mem[1] = 8'hD3;
+   data_mem[2] = 8'h78;
+   data_mem[3] = 8'hD3;
    data_mem[127] = 8'hCC;
 end
 

@@ -65,6 +65,7 @@ wire       wr_data_sel_cntrl;                //A regiszterbe �rand� adat kiv
 wire       addr_op2_sel;               //Az ALU 2. operandus�nak kiv�laszt�sa
 wire       reg_wr_en_cntrl;                  //A regisztert�mb �r�s enged�lyez� jele
 wire [3:0] reg_addr_x_cntrl;                 //Regiszter c�me (X port)
+wire [3:0] reg_addr_x;
 wire [3:0] reg_addr_y;                 //Regiszter c�me (Y port)
 wire [1:0] alu_op_type;                //ALU m�velet kiv�laszt� jel
 wire [1:0] alu_arith_sel;              //Aritmetikai m�velet kiv�laszt� jel
