@@ -32,7 +32,7 @@ module minirisc_cpu(
    output wire [47:0] cpu2dbg_data     //Jelek a CPU-t�l a debug modul fel�
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
+`include "control_defs.vh"
 
 //******************************************************************************
 //* Debug interf�sz jelek.                                                     *

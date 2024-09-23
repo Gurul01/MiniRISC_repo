@@ -33,8 +33,8 @@ module alu(
    output reg        flag_v         //Overflow flag
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
-`include "src\MiniRISC_CPU\opcode_defs.vh"
+`include "control_defs.vh"
+`include "opcode_defs.vh"
 
 //******************************************************************************
 //* Az aritmetikai mûveletek végrehajtása (összeadás és kivonás).              *
