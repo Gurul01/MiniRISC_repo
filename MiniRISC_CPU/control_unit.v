@@ -67,8 +67,8 @@ module control_unit(
    output wire [13:0] dbg_stack_top    //A verem tetején lévõ adat
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
-`include "src\MiniRISC_CPU\opcode_defs.vh"
+`include "control_defs.vh"
+`include "opcode_defs.vh"
 
 //******************************************************************************
 //* Vezérlõ jelek.                                                             *

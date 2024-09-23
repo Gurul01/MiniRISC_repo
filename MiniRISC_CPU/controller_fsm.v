@@ -60,8 +60,8 @@ module controller_fsm(
    output wire       dbg_is_brk        //A töréspont állapot jelzése
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
-`include "src\MiniRISC_CPU\opcode_defs.vh"
+`include "control_defs.vh"
+`include "opcode_defs.vh"
 
 //******************************************************************************
 //* Megyszakítás engedélyezõ flag (IE).                                        *
