@@ -271,7 +271,7 @@ localparam SHIFT_ROR  = 2'b11;
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1110 | m�velet|     00000000     |                                      *
 //******************************************************************************
-localparam OPCODE_CTRL = 4'1110;
+localparam OPCODE_CTRL = 4'b1110;
 
 localparam CTRL_JMP = 4'b0000;
 localparam CTRL_JZ  = 4'b0001;
