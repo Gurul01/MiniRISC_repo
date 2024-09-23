@@ -32,7 +32,7 @@ module minirisc_cpu(
    output wire [47:0] cpu2dbg_data     //Jelek a CPU-t�l a debug modul fel�
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
+`include "control_defs.vh"
 
 //******************************************************************************
 //* Debug interf�sz jelek.                                                     *
@@ -140,6 +140,8 @@ control_unit control_unit(
    .stack_op_ongoing(stack_op_ongoing),
    .stack_op_end(stack_op_end),
    .push_or_pop(push_or_pop),
+
+   .SP(SP),
    
    //A debug interf�sz jelei.
    .dbg_data_in(dbg_data_in),          //Adatbemenet
@@ -154,7 +156,7 @@ control_unit control_unit(
    .dbg_int_req(dbg_int_req),          //A megszak�t�s kiszolg�l�s�nak jelz�se
    .dbg_is_brk(dbg_is_brk),            //A t�r�spont �llapot jelz�se
    .dbg_flag_ie(dbg_flag_ie),          //Megyszak�t�s enged�lyez� flag (IE)
-   .dbg_flag_if(dbg_flag_if),          //Megyszak�t�s flag (IF)
+   .dbg_flag_if(dbg_flag_if)           //Megyszak�t�s flag (IF)
 );
 
 

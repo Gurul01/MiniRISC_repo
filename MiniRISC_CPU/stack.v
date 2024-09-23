@@ -24,7 +24,7 @@ module stack(
   output reg  [7:0] data_out_PC
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
+`include "control_defs.vh"
 
 localparam state_NOP       = 4'd0;
 localparam state_PUSH_flag = 4'd1;
@@ -72,7 +72,7 @@ begin
                           end
                           else begin
                               SP_out <= SP + 8'd2;
-                              state <= state_POP;
+                              state <= state_POP_PC;
                           end
                        end
                        else

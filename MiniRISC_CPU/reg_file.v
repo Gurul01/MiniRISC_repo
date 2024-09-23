@@ -25,7 +25,7 @@ module reg_file(
    output wire [7:0] SP
 );
 
-`include "src\MiniRISC_CPU\control_defs.vh"
+`include "control_defs.vh"
 
 //******************************************************************************
 //* A 16 x 8 bites elosztott RAM deklar�l�sa.                                  *
