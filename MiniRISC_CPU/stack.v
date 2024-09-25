@@ -11,7 +11,7 @@ module stack(
   input  wire bus_grant,
 
   output reg  [7:0] data_mem_addr,
-  inout  wire [7:0] data_mem_din,
+  input  wire [7:0] data_mem_din,
   output reg  [7:0] data_mem_dout,
 
   input  wire [7:0] SP,

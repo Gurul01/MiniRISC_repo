@@ -129,21 +129,25 @@ prg_mem[16] = 16'hEE13;
    prg_mem[9 +16]  = 16'hF2A1;
    prg_mem[10+16] = 16'hF1B3;
    prg_mem[11+16] = 16'hB3D3;
-   prg_mem[12+16] = 16'hB178;
+      prg_mem[12+16] = 16'hE932; // JSR 50
+      prg_mem[13+16] = 16'hE935; // JSR 52
+   prg_mem[12+16+2] = 16'hB178;
    
-   prg_mem[13+16] = 16'hF1A3;
-   prg_mem[14+16] = 16'hF3B1;
-   prg_mem[15+16] = 16'hB1D3;
-   prg_mem[16+16] = 16'hB3D3;
-   prg_mem[17+16] = 16'hF2B1;
-   /*
-   prg_mem[18] = 16'h0000;
-   prg_mem[19] = 16'h0000;
-   prg_mem[20] = 16'h0000;
-   prg_mem[21] = 16'h0000;
-   prg_mem[22] = 16'h0000;
-   prg_mem[23] = 16'h0000;
-   */
+   prg_mem[13+16+2] = 16'hF1A3;
+   prg_mem[14+16+2] = 16'hF3B1;
+   prg_mem[15+16+2] = 16'hB1D3;
+   prg_mem[16+16+2] = 16'hB3D3;
+   prg_mem[17+16+2] = 16'hF2B1;
+   
+   prg_mem[18+16 +16] = 16'hCA05;
+   prg_mem[19+16 +16] = 16'h0A05;
+   prg_mem[20+16 +16] = 16'hFBF0; // RTI  doesn't change flages
+   prg_mem[21+16 +16] = 16'hC904;
+   prg_mem[22+16 +16] = 16'h0909;
+   prg_mem[23+16 +16] = 16'hFAF0; // RTS changes flags
+   prg_mem[24+16 +16] = 16'h0000;
+   prg_mem[25+16 +16] = 16'h0000;
+   
 end
 
 /* always @(posedge clk)

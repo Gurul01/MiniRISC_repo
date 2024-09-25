@@ -242,7 +242,7 @@ stack stack(
    .bus_grant(m_bus_grant),
 
    .data_mem_addr(stack_mem_addr),    //C�mbusz
-   .data_mem_din(stack_mem_din),     //Olvas�si adatbusz
+   .data_mem_din(m_slv2mst_data),     //Olvas�si adatbusz
    .data_mem_dout(stack_mem_dout),    //�r�si adatbusz
 
    .SP(SP),
