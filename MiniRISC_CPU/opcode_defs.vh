@@ -101,13 +101,13 @@ localparam OPCODE_SBC = 4'b0011;
 
 
 //******************************************************************************
-//* CMP rX, #imm                                                      A t�pus� *
+//* CMC rX, #imm                                                      A t�pus� *
 //* Regiszter �sszehasonl�t�sa konstanssal: rX - imm                  Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1010 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* CMP rX, rY                                                        B t�pus� *
+//* CMC rX, rY                                                        B t�pus� *
 //* Regiszter �sszehasonl�t�sa regiszterrel: rX - rY                  Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
