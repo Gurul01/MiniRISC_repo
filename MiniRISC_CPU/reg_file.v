@@ -33,6 +33,10 @@ module reg_file(
 (* ram_style = "distributed" *)
 reg [7:0] reg_file_ram [15:0];
 
+initial begin
+   reg_file_ram[SP_address] = 8'd127;
+end
+
 
 //******************************************************************************
 //* Az �r�si port megval�s�t�sa. Az �r�s szinkron m�don t�rt�nik.              *

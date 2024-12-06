@@ -52,7 +52,6 @@ wire [7:0]  dbg_reg_dout;              //A regisztert�mbb�l beolvasott adat
 wire        dbg_flag_ie;               //Megyszak�t�s enged�lyez� flag (IE)
 wire        dbg_flag_if;               //Megyszak�t�s flag (IF)
 wire        dbg_is_brk;                //A t�r�spont �llapot jelz�se
-wire [13:0] dbg_stack_top;             //A verem tetej�n l�v� adat
 
 
 //******************************************************************************
@@ -296,7 +295,7 @@ assign dbg_mem_rd          = dbg2cpu_data[22];
 assign cpu2dbg_data[7:0]   = cpu2pmem_addr;
 assign cpu2dbg_data[15:8]  = dbg_reg_dout;
 assign cpu2dbg_data[23:16] = reg_wr_data;
-assign cpu2dbg_data[37:24] = dbg_stack_top;
+assign cpu2dbg_data[37:24] = {8'b00000000, dbg_stack_top};
 assign cpu2dbg_data[38]    = alu_flag_z;
 assign cpu2dbg_data[39]    = alu_flag_c;
 assign cpu2dbg_data[40]    = alu_flag_n;
