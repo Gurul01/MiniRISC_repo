@@ -59,8 +59,6 @@ module control_unit(
    output wire       stack_op_ongoing,
    input  wire       stack_op_end,
    output wire       push_or_pop,
-
-   input  wire [7:0] SP,
    
    //A debug interf�sz jelei.
    input  wire [7:0]  dbg_data_in,     //Adatbemenet
@@ -152,7 +150,7 @@ assign reg_addr_y    = ir[3:0];
 //Ha adatmemoriat irunk vagy olvasunk akkor SP relativen cimzunk.
 //0: data_mem_wr || data_mem_rd -> Az utolso 8 bit a konstans adat
 //1: data_mem_wr || data_mem_rd -> SP relativ cimzes
-assign const_data    = (data_mem_wr || data_mem_rd) ? (ir[7:0] + SP) : (ir[7:0]);
+assign const_data    = ir[7:0];
 
 //Az ALU m�veletek kiv�laszt� jelei.
 assign alu_arith_sel = opcode[1:0];

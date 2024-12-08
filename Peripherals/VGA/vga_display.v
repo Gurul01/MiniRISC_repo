@@ -1,90 +1,90 @@
 `timescale 1ns / 1ps
 
 //******************************************************************************
-//* 1024 x 768 @ 60 Hz VGA megjelenítõ modul grafikus és karakteres üzemmód    *
-//* támogatással.                                                              *
+//* 1024 x 768 @ 60 Hz VGA megjelenï¿½tï¿½ modul grafikus ï¿½s karakteres ï¿½zemmï¿½d    *
+//* tï¿½mogatï¿½ssal.                                                              *
 //*                                                                            *
-//* A programozói felület:                                                     *
+//* A programozï¿½i felï¿½let:                                                     *
 //*                                                                            *
-//* Cím         Típus   Bitek                                                  *
-//* BASEADDR+0          VGA kontroll/státusz regiszter                         *
+//* Cï¿½m         Tï¿½pus   Bitek                                                  *
+//* BASEADDR+0          VGA kontroll/stï¿½tusz regiszter                         *
 //*             WR      -     -     -     -     -     INC   MODE  EN           *
 //*             RD      VBL   IRQ   0     0     0     INC   MODE  EN           *
-//* BASEADDR+1          Megszakítás engedélyezõ regiszter                      *
+//* BASEADDR+1          Megszakï¿½tï¿½s engedï¿½lyezï¿½ regiszter                      *
 //*             WR      -     -     -     -     -     -     -     VBIE         *
 //*             RD      0     0     0     0     0     0     0     VBIE         *
-//* BASEADDR+2          Megszakítás flag regiszter                             *
+//* BASEADDR+2          Megszakï¿½tï¿½s flag regiszter                             *
 //*             W1C     -     -     -     -     -     -     -     VBIF         *
 //*             RD      0     0     0     0     0     0     0     VBIF         *
 //* BASEADDR+3  RD/WR   Adatregiszter                                          *
-//* BASEADDR+4  RD/WR   X-koordináta regiszter                                 *
-//* BASEADDR+5  RD/WR   Y-koordináta regiszter                                 *
+//* BASEADDR+4  RD/WR   X-koordinï¿½ta regiszter                                 *
+//* BASEADDR+5  RD/WR   Y-koordinï¿½ta regiszter                                 *
 //*                                                                            *
-//* A grafikus üzemmód (MODE=0) felbontása 256x192 pixel, a karakteres üzemmód *
-//* (MODE=1) felbontása pedig 32x24 karakter. A koordináta regiszterekbe ennek *
-//* megfelelõ értékek írandók. A (0, 0) a bal felsõ sarok koordinátája.        *
+//* A grafikus ï¿½zemmï¿½d (MODE=0) felbontï¿½sa 256x192 pixel, a karakteres ï¿½zemmï¿½d *
+//* (MODE=1) felbontï¿½sa pedig 32x24 karakter. A koordinï¿½ta regiszterekbe ennek *
+//* megfelelï¿½ ï¿½rtï¿½kek ï¿½randï¿½k. A (0, 0) a bal felsï¿½ sarok koordinï¿½tï¿½ja.        *
 //*                                                                            *
-//* Grafikus üzemmód esetén egy adatregiszter írással egy pixel vezérelhetõ.   *
-//* A pixel színét a beírt bájt alsó három bitje határozza meg.                *
+//* Grafikus ï¿½zemmï¿½d esetï¿½n egy adatregiszter ï¿½rï¿½ssal egy pixel vezï¿½relhetï¿½.   *
+//* A pixel szï¿½nï¿½t a beï¿½rt bï¿½jt alsï¿½ hï¿½rom bitje hatï¿½rozza meg.                *
 //*                                                                            *
-//* Karakteres mód esetén egy karakterhez két adatregiszter elérés tartozik:   *
+//* Karakteres mï¿½d esetï¿½n egy karakterhez kï¿½t adatregiszter elï¿½rï¿½s tartozik:   *
 //*                  D7    | D6 | D5  D4  D3 | D2   D1   D0                    *
-//* 1. írás/olvasás: a megjelenítendõ karakter ASCII kódja                     *
-//* 2. írás/olvasás: BLINK | -  | háttérszín | karakterszín                    *
+//* 1. ï¿½rï¿½s/olvasï¿½s: a megjelenï¿½tendï¿½ karakter ASCII kï¿½dja                     *
+//* 2. ï¿½rï¿½s/olvasï¿½s: BLINK | -  | hï¿½ttï¿½rszï¿½n | karakterszï¿½n                    *
 //*                                                                            *
-//* Az adatregiszter elérés során az INC bit értékének megfelelõen változnak a *
-//* koordináták:                                                               *
-//* INC=0: vízszintes írás/olvasás, az X-koordináta növekszik elõször          *
-//* INC=1: függõleges írás/olvasás, az Y-koordináta növekszik elõször          *
+//* Az adatregiszter elï¿½rï¿½s sorï¿½n az INC bit ï¿½rtï¿½kï¿½nek megfelelï¿½en vï¿½ltoznak a *
+//* koordinï¿½tï¿½k:                                                               *
+//* INC=0: vï¿½zszintes ï¿½rï¿½s/olvasï¿½s, az X-koordinï¿½ta nï¿½vekszik elï¿½szï¿½r          *
+//* INC=1: fï¿½ggï¿½leges ï¿½rï¿½s/olvasï¿½s, az Y-koordinï¿½ta nï¿½vekszik elï¿½szï¿½r          *
 //******************************************************************************
 module vga_display #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    parameter BASEADDR = 8'hff
 ) (
-   //Órajel és reset.
-   input  wire       clk,              //Órajel
+   //ï¿½rajel ï¿½s reset.
+   input  wire       clk,              //ï¿½rajel
    input  wire       rst,              //Reset jel
    
-   //A slave busz interfész jelei.
-   input  wire [7:0] s_mst2slv_addr,   //Címbusz
-   input  wire       s_mst2slv_wr,     //Írás engedélyezõ jel
-   input  wire       s_mst2slv_rd,     //Olvasás engedélyezõ jel
-   input  wire [7:0] s_mst2slv_data,   //Írási adatbusz
-   output reg  [7:0] s_slv2mst_data,   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   input  wire [7:0] s_mst2slv_addr,   //Cï¿½mbusz
+   input  wire       s_mst2slv_wr,     //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   input  wire       s_mst2slv_rd,     //Olvasï¿½s engedï¿½lyezï¿½ jel
+   input  wire [7:0] s_mst2slv_data,   //ï¿½rï¿½si adatbusz
+   output reg  [7:0] s_slv2mst_data,   //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    output wire       irq,
    
-   //A VGA interfész jelei.
-   output wire       vga_enabled,      //A VGA interfész engedélyezett
-   output reg  [5:0] rgb_out,          //Szín adatok
-   output wire       hsync_out,        //Horizontális szinkronjel
-   output wire       vsync_out         //Vertikális szinkronjel
+   //A VGA interfï¿½sz jelei.
+   output wire       vga_enabled,      //A VGA interfï¿½sz engedï¿½lyezett
+   output reg  [5:0] rgb_out,          //Szï¿½n adatok
+   output wire       hsync_out,        //Horizontï¿½lis szinkronjel
+   output wire       vsync_out         //Vertikï¿½lis szinkronjel
 );
 
 //******************************************************************************
-//* Címdekódolás.                                                              *
+//* Cï¿½mdekï¿½dolï¿½s.                                                              *
 //******************************************************************************
-//A periféria kiválasztó jele.
+//A perifï¿½ria kivï¿½lasztï¿½ jele.
 wire psel = ((s_mst2slv_addr >> 3) == (BASEADDR >> 3));
 
-//A kontroll/státusz regiszter írásának és olvasásának jelzése.
+//A kontroll/stï¿½tusz regiszter ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire ctrl_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b000);
 wire stat_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b000);
 
-//A megszakítás engedélyezõ regiszter írásának és olvasásának jelzése.
+//A megszakï¿½tï¿½s engedï¿½lyezï¿½ regiszter ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire ie_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b001);
 wire ie_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b001);
 
-//A megszakítás flag regiszter írásának és olvasásának jelzése.
+//A megszakï¿½tï¿½s flag regiszter ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire if_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b010);
 wire if_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b010);
 
-//Az adatregiszter írásának és olvasásának jelzése.
+//Az adatregiszter ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire data_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b011);
 wire data_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b011);
 
-//A címszámláló írásának és olvasásának jelzése.
+//A cï¿½mszï¿½mlï¿½lï¿½ ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire xcnt_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b100);
 wire xcnt_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b100);
 wire ycnt_reg_wr = psel & s_mst2slv_wr & (s_mst2slv_addr[2:0] == 3'b101);
@@ -92,7 +92,7 @@ wire ycnt_reg_rd = psel & s_mst2slv_rd & (s_mst2slv_addr[2:0] == 3'b101);
 
 
 //******************************************************************************
-//* Kontroll/státusz regiszter.                                                *
+//* Kontroll/stï¿½tusz regiszter.                                                *
 //******************************************************************************
 reg [2:0] ctrl_reg;
 
@@ -110,7 +110,7 @@ assign vga_enabled = ctrl_reg[0];
 wire   disp_mode   = ctrl_reg[1];
 wire   adr_inc_sel = ctrl_reg[2];
 
-//A státusz regiszter bitjei.
+//A stï¿½tusz regiszter bitjei.
 wire [7:0] stat_reg;
 wire       v_blank;
 
@@ -121,7 +121,7 @@ assign stat_reg[7]   = v_blank;
 
 
 //******************************************************************************
-//* Megszakítás engedélyezõ regiszter.                                         *
+//* Megszakï¿½tï¿½s engedï¿½lyezï¿½ regiszter.                                         *
 //******************************************************************************
 reg ie_reg;
 
@@ -136,7 +136,7 @@ end
 
 
 //******************************************************************************
-//* Megszakítás flag regiszter.                                                *
+//* Megszakï¿½tï¿½s flag regiszter.                                                *
 //******************************************************************************
 reg  if_reg;
 wire v_blank_begin;
@@ -154,12 +154,12 @@ begin
             if_reg <= 1'b0;
 end
 
-//A megszakításkérõ kimenet meghajtása.
+//A megszakï¿½tï¿½skï¿½rï¿½ kimenet meghajtï¿½sa.
 assign irq = ie_reg & if_reg;
 
 
 //******************************************************************************
-//* Adatregiszter (video memória).                                             *
+//* Adatregiszter (video memï¿½ria).                                             *
 //******************************************************************************
 reg  [15:0] vram_cpu_addr;
 wire [7:0]  vram_cpu_dout;
@@ -169,29 +169,29 @@ wire [2:0]  vram_rgb_data;
 wire [15:0] vram_chr_data;
 
 video_memory video_memory(
-   //Órajel.
+   //ï¿½rajel.
    .clk(clk),
    
-   //Üzemmód kiválasztó jel (0: grafikus, 1: karakteres).
+   //ï¿½zemmï¿½d kivï¿½lasztï¿½ jel (0: grafikus, 1: karakteres).
    .mode(disp_mode),
    
-   //Írási/olvasási port a CPU felé.
-   .cpu_addr(vram_cpu_addr),           //Címbusz
-   .cpu_write(data_reg_wr),            //Írás engedélyezõ jel
-   .cpu_din(s_mst2slv_data),           //Írási adatbusz
-   .cpu_dout(vram_cpu_dout),           //Olvasási adatbusz
+   //ï¿½rï¿½si/olvasï¿½si port a CPU felï¿½.
+   .cpu_addr(vram_cpu_addr),           //Cï¿½mbusz
+   .cpu_write(data_reg_wr),            //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .cpu_din(s_mst2slv_data),           //ï¿½rï¿½si adatbusz
+   .cpu_dout(vram_cpu_dout),           //Olvasï¿½si adatbusz
    
-   //Olvasási port a VGA modul felé.
-   .vga_addr(vram_vga_addr),           //Olvasási cím
-   .vga_rgb_data(vram_rgb_data),       //Adat (grafikus mód)
-   .vga_char_data(vram_chr_data)       //Adat (karakteres mód)
+   //Olvasï¿½si port a VGA modul felï¿½.
+   .vga_addr(vram_vga_addr),           //Olvasï¿½si cï¿½m
+   .vga_rgb_data(vram_rgb_data),       //Adat (grafikus mï¿½d)
+   .vga_char_data(vram_chr_data)       //Adat (karakteres mï¿½d)
 );
 
 
 //******************************************************************************
-//* Címszámláló.                                                               *
+//* Cï¿½mszï¿½mlï¿½lï¿½.                                                               *
 //******************************************************************************
-//Számláló az X-koordinátához.
+//Szï¿½mlï¿½lï¿½ az X-koordinï¿½tï¿½hoz.
 reg  [7:0] x_cnt;
 reg        x_cnt_en;
 wire       x_cnt_max = (x_cnt == ((disp_mode) ? 8'd31 : 8'd255));
@@ -211,7 +211,7 @@ begin
                x_cnt <= x_cnt + 8'd1;
 end
 
-//Számláló az X-koordinátához.
+//Szï¿½mlï¿½lï¿½ az X-koordinï¿½tï¿½hoz.
 reg  [7:0] y_cnt;
 reg        y_cnt_en;
 wire       y_cnt_max = (y_cnt == ((disp_mode) ? 8'd23 : 8'd191));
@@ -231,7 +231,7 @@ begin
                y_cnt <= y_cnt + 8'd1;
 end
 
-//Karakteres üzemmód esetén a cím LSb-je.
+//Karakteres ï¿½zemmï¿½d esetï¿½n a cï¿½m LSb-je.
 reg  chr_addr_lsb;
 wire data_reg_rdwr = data_reg_wr | data_reg_rd;
 
@@ -244,45 +244,45 @@ begin
          chr_addr_lsb <= ~chr_addr_lsb;
 end
 
-//Az X számláló engedélyezõ jelének elõállítása.
+//Az X szï¿½mlï¿½lï¿½ engedï¿½lyezï¿½ jelï¿½nek elï¿½ï¿½llï¿½tï¿½sa.
 always @(*)
 begin
    if (disp_mode)
       if (adr_inc_sel)
-         //Karakteres üzemmód, függõleges írás/olvasás.
+         //Karakteres ï¿½zemmï¿½d, fï¿½ggï¿½leges ï¿½rï¿½s/olvasï¿½s.
          x_cnt_en <= data_reg_rdwr & chr_addr_lsb & y_cnt_max;
       else
-         //Karakteres üzemmód, vízszintes írás/olvasás.
+         //Karakteres ï¿½zemmï¿½d, vï¿½zszintes ï¿½rï¿½s/olvasï¿½s.
          x_cnt_en <= data_reg_rdwr & chr_addr_lsb;
    else
       if (adr_inc_sel)
-         //Grafikus üzemmód, függõleges írás/olvasás.
+         //Grafikus ï¿½zemmï¿½d, fï¿½ggï¿½leges ï¿½rï¿½s/olvasï¿½s.
          x_cnt_en <= data_reg_rdwr & y_cnt_max;
       else
-         //Grafikus üzemmód, vízszintes írás/olvasás.
+         //Grafikus ï¿½zemmï¿½d, vï¿½zszintes ï¿½rï¿½s/olvasï¿½s.
          x_cnt_en <= data_reg_rdwr;
 end
 
-//Az Y számláló engedélyezõ jelének elõállítása.
+//Az Y szï¿½mlï¿½lï¿½ engedï¿½lyezï¿½ jelï¿½nek elï¿½ï¿½llï¿½tï¿½sa.
 always @(*)
 begin
    if (disp_mode)
       if (adr_inc_sel)
-         //Karakteres üzemmód, függõleges írás/olvasás.
+         //Karakteres ï¿½zemmï¿½d, fï¿½ggï¿½leges ï¿½rï¿½s/olvasï¿½s.
          y_cnt_en <= data_reg_rdwr & chr_addr_lsb;
       else
-         //Karakteres üzemmód, vízszintes írás/olvasás.
+         //Karakteres ï¿½zemmï¿½d, vï¿½zszintes ï¿½rï¿½s/olvasï¿½s.
          y_cnt_en <= data_reg_rdwr & chr_addr_lsb & x_cnt_max;
    else
       if (adr_inc_sel)
-         //Grafikus üzemmód, függõleges írás/olvasás.
+         //Grafikus ï¿½zemmï¿½d, fï¿½ggï¿½leges ï¿½rï¿½s/olvasï¿½s.
          y_cnt_en <= data_reg_rdwr;
       else
-         //Grafikus üzemmód, vízszintes írás/olvasás.
+         //Grafikus ï¿½zemmï¿½d, vï¿½zszintes ï¿½rï¿½s/olvasï¿½s.
          y_cnt_en <= data_reg_rdwr & x_cnt_max;
 end
 
-//A CPU oldali video memória cím elõállítása.
+//A CPU oldali video memï¿½ria cï¿½m elï¿½ï¿½llï¿½tï¿½sa.
 always @(*)
 begin
    if (disp_mode)
@@ -293,9 +293,9 @@ end
 
 
 //******************************************************************************
-//* A processzor olvasási adatbuszának meghajtása. Az olvasási adatbuszra csak *
-//* az olvasás ideje alatt kapcsoljuk rá a kért értéket, egyébként egy inaktív *
-//* nulla érték jelenik meg rajta (elosztott busz multiplexer funkció).        *
+//* A processzor olvasï¿½si adatbuszï¿½nak meghajtï¿½sa. Az olvasï¿½si adatbuszra csak *
+//* az olvasï¿½s ideje alatt kapcsoljuk rï¿½ a kï¿½rt ï¿½rtï¿½ket, egyï¿½bkï¿½nt egy inaktï¿½v *
+//* nulla ï¿½rtï¿½k jelenik meg rajta (elosztott busz multiplexer funkciï¿½).        *
 //******************************************************************************
 wire [5:0] dout_sel;
 
@@ -321,7 +321,7 @@ end
 
 
 //******************************************************************************
-//* VGA idõzítés generátor.                                                    *
+//* VGA idï¿½zï¿½tï¿½s generï¿½tor.                                                    *
 //******************************************************************************
 wire [8:0] h_cnt;
 wire [9:0] v_cnt;
@@ -330,34 +330,34 @@ wire       h_sync;
 wire       v_sync;
 
 vga_timing vga_timing(
-   //Órajel és reset.
-   .clk(clk),                          //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                          //ï¿½rajel
    .rst(rst),                          //Reset jel
    
-   //Horizontális és vertikális számlálók.
-   .h_cnt(h_cnt),                      //Horizontális számláló
-   .v_cnt(v_cnt),                      //Vertikális számláló
+   //Horizontï¿½lis ï¿½s vertikï¿½lis szï¿½mlï¿½lï¿½k.
+   .h_cnt(h_cnt),                      //Horizontï¿½lis szï¿½mlï¿½lï¿½
+   .v_cnt(v_cnt),                      //Vertikï¿½lis szï¿½mlï¿½lï¿½
    
-   //Szinkron- és kioltójelek. 
-   .h_blank(h_blank),                  //Horizontális kioltójel
-   .v_blank(v_blank),                  //Vertikális kioltójel
-   .v_blank_begin(v_blank_begin),      //A vertikális visszafutás kezdete
-   .v_blank_end(v_blank_end),          //A vertikális visszafutás vége
-   .h_sync(h_sync),                    //Horizontális szinkronjel
-   .v_sync(v_sync)                     //Vertikális szinkronjel
+   //Szinkron- ï¿½s kioltï¿½jelek. 
+   .h_blank(h_blank),                  //Horizontï¿½lis kioltï¿½jel
+   .v_blank(v_blank),                  //Vertikï¿½lis kioltï¿½jel
+   .v_blank_begin(v_blank_begin),      //A vertikï¿½lis visszafutï¿½s kezdete
+   .v_blank_end(v_blank_end),          //A vertikï¿½lis visszafutï¿½s vï¿½ge
+   .h_sync(h_sync),                    //Horizontï¿½lis szinkronjel
+   .v_sync(v_sync)                     //Vertikï¿½lis szinkronjel
 );
 
-//A kioltó jel elõállítása.
+//A kioltï¿½ jel elï¿½ï¿½llï¿½tï¿½sa.
 wire blank = h_blank | v_blank;
 
-//A videomemória VGA oldali címének elõállítása.
+//A videomemï¿½ria VGA oldali cï¿½mï¿½nek elï¿½ï¿½llï¿½tï¿½sa.
 always @(*)
 begin
    if (disp_mode)
-      //Karakteres üzemmód.
+      //Karakteres ï¿½zemmï¿½d.
       vram_vga_addr <= {5'd0, v_cnt[9:5], h_cnt[7:3], 1'd0};
    else
-      //Grafikus üzemmód.
+      //Grafikus ï¿½zemmï¿½d.
       vram_vga_addr <= {v_cnt[9:2], h_cnt[7:0]};
 end
 
@@ -371,12 +371,12 @@ reg chr_rom_dout;
 
 initial
 begin
-   $readmemh("src/Peripherals/VGA/font_data.txt", chr_rom, 0, 16383);
+   $readmemh("font_data.txt", chr_rom, 0, 16383);
 end
 
-//A karakter ROM cím alsó 6 bitjének késleltetése. Ez azért szükséges, mert
-//a video memória blokk-RAM-mal van megvalósítva, így olvasás esetén 1 órajel
-//ütemnyit késleltet.
+//A karakter ROM cï¿½m alsï¿½ 6 bitjï¿½nek kï¿½sleltetï¿½se. Ez azï¿½rt szï¿½ksï¿½ges, mert
+//a video memï¿½ria blokk-RAM-mal van megvalï¿½sï¿½tva, ï¿½gy olvasï¿½s esetï¿½n 1 ï¿½rajel
+//ï¿½temnyit kï¿½sleltet.
 reg  [5:0]  chr_rom_adrl;
 wire [13:0] chr_rom_addr = {vram_chr_data[7:0], chr_rom_adrl}; 
 
@@ -393,9 +393,9 @@ end
 
 
 //******************************************************************************
-//* A VGA interfész kimeneteinek meghajtása.                                   *
+//* A VGA interfï¿½sz kimeneteinek meghajtï¿½sa.                                   *
 //******************************************************************************
-//A szükséges jelek késleltetése a blokk-RAM-ok számának megfelelõen.
+//A szï¿½ksï¿½ges jelek kï¿½sleltetï¿½se a blokk-RAM-ok szï¿½mï¿½nak megfelelï¿½en.
 reg [7:0] chr_reg;
 reg [2:0] rgb_reg;
 reg [1:0] blank_reg;
@@ -411,7 +411,7 @@ begin
    v_sync_reg <= {v_sync_reg[1:0], v_sync};
 end
 
-//Órajel osztó a karakterek villogtatásához.
+//ï¿½rajel osztï¿½ a karakterek villogtatï¿½sï¿½hoz.
 reg [5:0] blink_cnt;
 
 always @(posedge clk)
@@ -423,7 +423,7 @@ begin
          blink_cnt <= blink_cnt + 6'd1;
 end
 
-//Az RGB kimenet meghajtása.
+//Az RGB kimenet meghajtï¿½sa.
 always @(posedge clk)
 begin
    if (blank_reg[1])
@@ -438,7 +438,7 @@ begin
          rgb_out <= {rgb_reg[2], rgb_reg[2], rgb_reg[1], rgb_reg[1], rgb_reg[0], rgb_reg[0]};
 end
 
-//A szinkronjelek meghajtása.
+//A szinkronjelek meghajtï¿½sa.
 assign hsync_out = h_sync_reg[2];
 assign vsync_out = v_sync_reg[2];
 

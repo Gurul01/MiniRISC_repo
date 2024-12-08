@@ -1,60 +1,60 @@
 `timescale 1ns / 1ps
 
 //******************************************************************************
-//* PS/2 billentyûzet interfész periféria. Az adatregiszterbõl a lenyomott     *
-//* billentyû ASCII kódja olvasható ki.                                        *
+//* PS/2 billentyï¿½zet interfï¿½sz perifï¿½ria. Az adatregiszterbï¿½l a lenyomott     *
+//* billentyï¿½ ASCII kï¿½dja olvashatï¿½ ki.                                        *
 //*                                                                            *
-//* A programozói felület:                                                     *
+//* A programozï¿½i felï¿½let:                                                     *
 //*                                                                            *
-//* Cím         Típus   Bitek                                                  *
-//* BASEADDR+0          PS/2 billentyûzet kontroll/státusz regiszter           *
+//* Cï¿½m         Tï¿½pus   Bitek                                                  *
+//* BASEADDR+0          PS/2 billentyï¿½zet kontroll/stï¿½tusz regiszter           *
 //*             WR      -     -     -     RXCLR IE    LSEL  MODE  EN           *
 //*             RD      RXNE  ASCII IRQ   0     IE    LSEL  MODE  EN           *
-//* BASEADDR+1          PS/2 billentyûzet adatregiszter                        *
-//*             RD      A lenyomott billentyû 8 bites ASCII kódja              *
+//* BASEADDR+1          PS/2 billentyï¿½zet adatregiszter                        *
+//*             RD      A lenyomott billentyï¿½ 8 bites ASCII kï¿½dja              *
 //******************************************************************************
 module ps2_keyboard #(
-   //A periféria báziscíme.
+   //A perifï¿½ria bï¿½ziscï¿½me.
    parameter BASEADDR = 8'hff
 ) (
-   //Órajel és reset.
-   input  wire       clk,              //Órajel
+   //ï¿½rajel ï¿½s reset.
+   input  wire       clk,              //ï¿½rajel
    input  wire       rst,              //Reset jel
    
-   //A PS/2 interfész jelei.
-   input  wire       ps2_clk,          //Órajel bemenet
+   //A PS/2 interfï¿½sz jelei.
+   input  wire       ps2_clk,          //ï¿½rajel bemenet
    input  wire       ps2_data,         //Soros adatbemenet
-   output reg        ps2_enable,       //A PS/2 interfész engedélyezõ jele
+   output reg        ps2_enable,       //A PS/2 interfï¿½sz engedï¿½lyezï¿½ jele
    
-   //A slave busz interfész jelei.
-   input  wire [7:0] s_mst2slv_addr,   //Címbusz
-   input  wire       s_mst2slv_wr,     //Írás engedélyezõ jel
-   input  wire       s_mst2slv_rd,     //Olvasás engedélyezõ jel
-   input  wire [7:0] s_mst2slv_data,   //Írási adatbusz
-   output reg  [7:0] s_slv2mst_data,   //Olvasási adatbusz
+   //A slave busz interfï¿½sz jelei.
+   input  wire [7:0] s_mst2slv_addr,   //Cï¿½mbusz
+   input  wire       s_mst2slv_wr,     //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   input  wire       s_mst2slv_rd,     //Olvasï¿½s engedï¿½lyezï¿½ jel
+   input  wire [7:0] s_mst2slv_data,   //ï¿½rï¿½si adatbusz
+   output reg  [7:0] s_slv2mst_data,   //Olvasï¿½si adatbusz
    
-   //Megszakításkérõ kimenet.
+   //Megszakï¿½tï¿½skï¿½rï¿½ kimenet.
    output wire       irq
 );
 
 //******************************************************************************
-//* Címdekódolás.                                                              *
+//* Cï¿½mdekï¿½dolï¿½s.                                                              *
 //******************************************************************************
-//A periféria kiválasztó jele.
+//A perifï¿½ria kivï¿½lasztï¿½ jele.
 wire psel = ((s_mst2slv_addr >> 1) == (BASEADDR >> 1));
 
-//A kontroll/státusz regiszter írásának és olvasásának jelzése.
+//A kontroll/stï¿½tusz regiszter ï¿½rï¿½sï¿½nak ï¿½s olvasï¿½sï¿½nak jelzï¿½se.
 wire ctrl_reg_wr = psel & s_mst2slv_wr & ~s_mst2slv_addr[0];
 wire stat_reg_rd = psel & s_mst2slv_rd & ~s_mst2slv_addr[0];
 
-//Az adatregiszter olvasásának jelzése.
+//Az adatregiszter olvasï¿½sï¿½nak jelzï¿½se.
 wire data_reg_rd = psel & s_mst2slv_rd &  s_mst2slv_addr[0];
 
 
 //******************************************************************************
-//* Kontroll/státusz regiszter.                                                *
+//* Kontroll/stï¿½tusz regiszter.                                                *
 //******************************************************************************
-//A PS/2 interfészt engedélyezõ bit.
+//A PS/2 interfï¿½szt engedï¿½lyezï¿½ bit.
 always @(posedge clk)
 begin
    if (rst)
@@ -64,7 +64,7 @@ begin
          ps2_enable <= s_mst2slv_data[0];
 end
 
-//Az üzemmódot kiválasztó bit (ASCII kód: 0, scan kód: 1).
+//Az ï¿½zemmï¿½dot kivï¿½lasztï¿½ bit (ASCII kï¿½d: 0, scan kï¿½d: 1).
 reg mode;
 
 always @(posedge clk)
@@ -76,7 +76,7 @@ begin
          mode <= s_mst2slv_data[1];
 end
 
-//A billentyûzet nyelvét kiválasztó bit (angol: 0, magyar: 1).
+//A billentyï¿½zet nyelvï¿½t kivï¿½lasztï¿½ bit (angol: 0, magyar: 1).
 reg lsel;
 
 always @(posedge clk)
@@ -88,7 +88,7 @@ begin
          lsel <= s_mst2slv_data[2];
 end
 
-//A megszakítás engedélyezõ bit.
+//A megszakï¿½tï¿½s engedï¿½lyezï¿½ bit.
 reg ie;
 
 always @(posedge clk)
@@ -100,10 +100,10 @@ begin
          ie <= s_mst2slv_data[3];
 end
 
-//A vételi FIFO törlõ jele.
+//A vï¿½teli FIFO tï¿½rlï¿½ jele.
 wire fifo_clr = rst | (ctrl_reg_wr & s_mst2slv_data[4]);
 
-//A státusz regiszter bitjei.
+//A stï¿½tusz regiszter bitjei.
 wire [7:0] stat_reg;
 wire       fifo_empty;
 wire [8:0] fifo_dout;
@@ -119,7 +119,7 @@ assign stat_reg[7] = ~fifo_empty;
 
 
 //******************************************************************************
-//* Az olvasási adatbusz és a megszakításkérõ kimenet meghajtása.              *
+//* Az olvasï¿½si adatbusz ï¿½s a megszakï¿½tï¿½skï¿½rï¿½ kimenet meghajtï¿½sa.              *
 //******************************************************************************
 wire [1:0] dout_sel = {data_reg_rd, stat_reg_rd};
 
@@ -136,31 +136,31 @@ assign irq = ~fifo_empty & ie;
 
 
 //******************************************************************************
-//* PS/2 vevõ modul.                                                           *
+//* PS/2 vevï¿½ modul.                                                           *
 //******************************************************************************
 wire [7:0] ps2_dout;
 wire       ps2_dout_valid;
 
 ps2_receiver ps2_receiver(
-   //Órajel és reset.
-   .clk(clk),                       //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                       //ï¿½rajel
    .rst(rst),                       //Reset jel
    
-   //A PS/2 interfész jelei.
-   .ps2_clk(ps2_clk),               //Órajel bemenet
+   //A PS/2 interfï¿½sz jelei.
+   .ps2_clk(ps2_clk),               //ï¿½rajel bemenet
    .ps2_data(ps2_data),             //Soros adatbemenet
    
-   //A vételt engedélyezõ jel.
+   //A vï¿½telt engedï¿½lyezï¿½ jel.
    .rx_enable(ps2_enable),
    
-   //Párhuzamos adatkimenet.
+   //Pï¿½rhuzamos adatkimenet.
    .data_out(ps2_dout),             //A vett adat
-   .data_valid(ps2_dout_valid)      //Érvényes adat jelzése
+   .data_valid(ps2_dout_valid)      //ï¿½rvï¿½nyes adat jelzï¿½se
 );
 
 
 //******************************************************************************
-//* A kibõvített billentyû prefix (0xE0) detektálása.                          *
+//* A kibï¿½vï¿½tett billentyï¿½ prefix (0xE0) detektï¿½lï¿½sa.                          *
 //******************************************************************************
 reg  extended_key;
 wire extended_key_set = ps2_dout_valid & (ps2_dout == 8'he0);
@@ -177,7 +177,7 @@ end
 
 
 //******************************************************************************
-//* A billentyû felengedés prefix (0xF0) detektálása.                          *
+//* A billentyï¿½ felengedï¿½s prefix (0xF0) detektï¿½lï¿½sa.                          *
 //******************************************************************************
 reg  key_pressed;
 wire key_pressed_set = ps2_dout_valid & (ps2_dout[7:5] != 3'b111);
@@ -194,9 +194,9 @@ end
 
 
 //******************************************************************************
-//* A SHIFT billentyûk lenyomásának detektálása.                               *
-//* A bal SHIFT scan kódja : 0x12                                              *
-//* A jobb SHIFT scan kódja: 0x59                                              *
+//* A SHIFT billentyï¿½k lenyomï¿½sï¿½nak detektï¿½lï¿½sa.                               *
+//* A bal SHIFT scan kï¿½dja : 0x12                                              *
+//* A jobb SHIFT scan kï¿½dja: 0x59                                              *
 //******************************************************************************
 reg  lshift_pressed;
 reg  rshift_pressed;
@@ -224,8 +224,8 @@ end
 
 
 //******************************************************************************
-//* Az ALT GR billentyû lenyomásának detektálása (magyar billentyûzetnél).     *
-//* A jobb ALT scan kódja: 0xe0 0x11                                           *
+//* Az ALT GR billentyï¿½ lenyomï¿½sï¿½nak detektï¿½lï¿½sa (magyar billentyï¿½zetnï¿½l).     *
+//* A jobb ALT scan kï¿½dja: 0xe0 0x11                                           *
 //******************************************************************************
 reg  altgr_pressed;
 wire is_right_alt = ps2_dout_valid & extended_key & (ps2_dout == 8'h11);
@@ -241,18 +241,18 @@ end
 
 
 //******************************************************************************
-//* ROM a scan kód ASCII kódra történõ átalakításához.                         *
+//* ROM a scan kï¿½d ASCII kï¿½dra tï¿½rtï¿½nï¿½ ï¿½talakï¿½tï¿½sï¿½hoz.                         *
 //******************************************************************************
 (* rom_style = "block" *)
 reg  [7:0]  ascii_rom [2047:0];
 wire [10:0] ascii_rom_addr;
 reg  [7:0]  ascii_rom_dout;
 
-`include "src\Peripherals\PS2Keyboard\ascii_table.vh"
+`include "ascii_table.vh"
 
 initial
 begin
-   $readmemh("src/Peripherals/PS2Keyboard/ascii_data.txt", ascii_rom, 0, 2047);
+   $readmemh("ascii_data.txt", ascii_rom, 0, 2047);
 end
 
 assign ascii_rom_addr[6:0] = ps2_dout[6:0];
@@ -266,8 +266,8 @@ begin
    ascii_rom_dout <= ascii_rom[ascii_rom_addr];
 end
 
-//A szükséges jeleket egy ütemmel késleltetjük
-//a blokk-RAM olvasási késleltetése miatt.
+//A szï¿½ksï¿½ges jeleket egy ï¿½temmel kï¿½sleltetjï¿½k
+//a blokk-RAM olvasï¿½si kï¿½sleltetï¿½se miatt.
 reg       not_prefix_byte; 
 reg [7:0] ps2_dout_reg;
 reg       ps2_dout_valid_reg;
@@ -281,41 +281,41 @@ end
 
 
 //******************************************************************************
-//* Vételi FIFO.                                                               *
+//* Vï¿½teli FIFO.                                                               *
 //******************************************************************************
-//ASCII kód jelzése a nyomtatható karakterekhez.
-//0: a karakter nem nyomtatható, a FIFO-ba a scan kód kerül
-//1: a karakter nyomtatható, a FIFO-ba az ASCII kód kerül
+//ASCII kï¿½d jelzï¿½se a nyomtathatï¿½ karakterekhez.
+//0: a karakter nem nyomtathatï¿½, a FIFO-ba a scan kï¿½d kerï¿½l
+//1: a karakter nyomtathatï¿½, a FIFO-ba az ASCII kï¿½d kerï¿½l
 wire is_ascii = ~mode & (ascii_rom_dout != 8'd0);
 
-//A FIFO-ba írandó adat.
+//A FIFO-ba ï¿½randï¿½ adat.
 wire [8:0] fifo_din;
 
 assign fifo_din[7:0] = (is_ascii) ? ascii_rom_dout : ps2_dout_reg;
 assign fifo_din[8]   = is_ascii;
 
-//A FIFO írás engedélyezõ jele.
+//A FIFO ï¿½rï¿½s engedï¿½lyezï¿½ jele.
 wire fifo_wr = ps2_dout_valid_reg & (is_ascii | not_prefix_byte);
 
-//A vételi FIFO.
+//A vï¿½teli FIFO.
 fifo #(
-   //A szószélesség bitekben.
+   //A szï¿½szï¿½lessï¿½g bitekben.
    .WIDTH(9)
 ) rx_fifo (
-   //Órajel és reset.
-   .clk(clk),                       //Órajel
+   //ï¿½rajel ï¿½s reset.
+   .clk(clk),                       //ï¿½rajel
    .rst(fifo_clr),                  //Reset jel
    
    //Adatvonalak.
-   .data_in(fifo_din),              //A FIFO-ba írandó adat
-   .data_out(fifo_dout),            //A FIFO-ból kiolvasott adat
+   .data_in(fifo_din),              //A FIFO-ba ï¿½randï¿½ adat
+   .data_out(fifo_dout),            //A FIFO-bï¿½l kiolvasott adat
    
-   //Vezérlõ bemenetek.
-   .write(fifo_wr),                 //Írás engedélyezõ jel
-   .read(data_reg_rd),              //Olvasás engedélyezõ jel
+   //Vezï¿½rlï¿½ bemenetek.
+   .write(fifo_wr),                 //ï¿½rï¿½s engedï¿½lyezï¿½ jel
+   .read(data_reg_rd),              //Olvasï¿½s engedï¿½lyezï¿½ jel
    
-   //Státusz kimenetek.
-   .empty(fifo_empty),              //A FIFO üres
+   //Stï¿½tusz kimenetek.
+   .empty(fifo_empty),              //A FIFO ï¿½res
    .full()                          //A FIFO tele van
 );
 

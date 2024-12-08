@@ -140,8 +140,6 @@ control_unit control_unit(
    .stack_op_ongoing(stack_op_ongoing),
    .stack_op_end(stack_op_end),
    .push_or_pop(push_or_pop),
-
-   .SP(SP),
    
    //A debug interf�sz jelei.
    .dbg_data_in(dbg_data_in),          //Adatbemenet

@@ -31,12 +31,18 @@ localparam state_PUSH_flag = 4'd1;
 localparam state_PUSH_PC   = 4'd2;
 localparam state_POP_PC    = 4'd3;
 localparam state_POP_flags = 4'd4;
-localparam state_END_OF_OP = 4'd5;
+//localparam state_END_OF_OP = 4'd5;
 
-assign stack_op_end = (state == state_END_OF_OP);
+assign stack_op_end = ((state == state_POP_flags) || (state == state_PUSH_PC));
 
 //A stack-et vezerlo allapotgep
 reg [2:0] state = state_NOP;
+
+reg[2:0] prev_state;
+always @(posedge clk)
+begin
+   prev_state <= state;
+end
 
 always @(*)
 begin
@@ -50,11 +56,29 @@ begin
       data_mem_addr <= SP - 8'd2;
       data_mem_dout <= data_in_PC;
    end
-
+//==========
    else if(state == state_POP_PC)
+   begin
       data_mem_addr <= SP;
+      data_mem_dout <= 8'b00000000;
+   end
    else if(state == state_POP_flags)
+   begin
       data_mem_addr <= SP + 8'd1;
+      data_mem_dout <= 8'b00000000;
+   end
+//==========
+   else begin
+      if(prev_state == state_PUSH_PC)
+      begin
+         data_mem_addr <= SP - 8'd2;
+         data_mem_dout <= data_in_PC;
+      end
+      else begin //Pop flags values
+         data_mem_addr <= SP + 8'd1;
+         data_mem_dout <= 8'b00000000;
+      end
+   end
 end
 
 always @(posedge clk)
@@ -84,7 +108,7 @@ begin
                           state <= state_PUSH_flag;
 
         state_PUSH_PC  : if(bus_grant)
-                          state <= state_END_OF_OP;
+                          state <= state_NOP;
                        else
                           state <= state_PUSH_PC;
 
@@ -99,12 +123,12 @@ begin
         state_POP_flags: if(bus_grant)
                          begin
                           data_out_flags <= data_mem_din;
-                          state <= state_END_OF_OP;
+                          state <= state_NOP;
                          end
                          else
                           state <= state_POP_flags;
 
-        state_END_OF_OP: state <= state_NOP;
+        //state_END_OF_OP: state <= state_NOP;
           
         //�rv�nytelen �llapotok.
         default       : state <= state_NOP;

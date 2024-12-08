@@ -322,7 +322,11 @@ begin
       ex_jump <= 1'b0;
 end
 
-assign stack_op_ongoing = (state == STATE_STACK_OP);
+assign stack_op_ongoing = ((state == STATE_STACK_OP) || ( (state == STATE_DECODE) && ( ((opcode == OPCODE_CTRL        ) && (ctrl_op == CTRL_JSR                           )) ||
+                                                                                       ((state  == OPCODE_CTRL_NO_DATA) && ((ctrl_op == CTRL_RTS) || (ctrl_op == CTRL_RTI)))
+                                                                                     )
+                                                        )
+                          );
 
 assign push_or_pop = ((flag_ie && irq) || (ctrl_op == CTRL_JSR)) ? (PUSH) : (POP);
 
