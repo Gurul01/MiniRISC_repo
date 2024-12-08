@@ -242,14 +242,14 @@ stack stack(
    .data_mem_din(m_slv2mst_data),     //Olvas�si adatbusz
    .data_mem_dout(stack_mem_dout),    //�r�si adatbusz
 
-   .SP(SP),
+   .SP_in(SP),
    .SP_out(SP_out),
    
-   .data_in_PC(PC),                //A verembe �rand� adat
-   .data_in_flags(stack_din_flags), 
+   .PC_in(PC),
+   .PC_out(return_pc),
 
-   .data_out_flags(stack_dout_flags),  
-   .data_out_PC(return_pc)
+   .Flags_in(stack_din_flags), 
+   .Flags_out(stack_dout_flags)
 );
 
 //A verembe elmentj�k a programsz�ml�l�t �s az ALU flag-eket.
