@@ -154,8 +154,8 @@ begin
    else begin
       if (op_type != ALU_MOVE)
       begin
-         // Zero flag akkumulalasa SBC es CMY muveletek eseten
-         if(arith_sel[1] & arith_sel[0])
+         // Zero flag akkumulalasa SBC es CMC muveletek eseten
+         if((op_type == ALU_ARITH) && (arith_sel[1] & arith_sel[0]))
             flag_z <= (flag_z) && (result == 8'd0);
          else
             flag_z <= (result == 8'd0);
