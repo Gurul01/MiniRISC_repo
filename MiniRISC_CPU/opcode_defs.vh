@@ -101,14 +101,14 @@ localparam OPCODE_SBC = 4'b0011;
 
 
 //******************************************************************************
-//* CMC rX, #imm                                                      A t�pus� *
-//* Regiszter �sszehasonl�t�sa konstanssal: rX - imm                  Z C N V  *
+//* CMP rX, #imm                                                      A t�pus� *
+//* Regiszter �sszehasonl�t�sa konstanssal atvitel nelkul: rX - imm   Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1010 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* CMC rX, rY                                                        B t�pus� *
-//* Regiszter �sszehasonl�t�sa regiszterrel: rX - rY                  Z C N V  *
+//* CMP rX, rY                                                        B t�pus� *
+//* Regiszter �sszehasonl�t�sa regiszterrel atvitel nelkul: rX - rY   Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1010  |    rY   |                                      *
@@ -117,14 +117,14 @@ localparam OPCODE_CMP = 4'b1010;
 
 
 //******************************************************************************
-//* CMP rX, #imm                                                      A t�pus� *
-//* Regiszter �sszehasonl�t�sa konstanssal: rX - imm + C              Z C N V  *
+//* CMC rX, #imm                                                      A t�pus� *
+//* Regiszter �sszehasonl�t�sa konstanssal atvitellel: rX - imm + C   Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7................0|                                      *
 //*  | 1011 |   rX   | 8 bites konstans |                                      *
 //*                                                                            *
-//* CMP rX, rY                                                        B t�pus� *
-//* Regiszter �sszehasonl�t�sa regiszterrel: rX - rY + C              Z C N V  *
+//* CMC rX, rY                                                        B t�pus� *
+//* Regiszter �sszehasonl�t�sa regiszterrel atvitellel: rX - rY + C   Z C N V  *
 //*                                                                            *
 //*  |15..12|11.....8|7......4|3.......0|                                      *
 //*  | 1111 |   rX   |  1011  |    rY   |                                      *
