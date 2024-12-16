@@ -281,8 +281,8 @@ localparam CTRL_JLE = 4'b1011; // Less Than or Equal   (<=): ZF = 1 OR SF ≠ OF
 localparam CTRL_JH  = 4'b1100; // Higher Than          (>):  ZF = 0 AND SF = OF
 localparam CTRL_JHE = 4'b1101; // Higher Than or Equal (>=): SF = OF
 //Unsigned
-localparam CTRL_JSE = 4'b1110; // Less Than or Equal (<=): ZF = 1 OR CF = 1
-localparam CTRL_JG  = 4'b1111; // Greater Than       (>):  CF = 0 AND ZF = 0
+localparam CTRL_JSE = 4'b1110; // Smaller Than or Equal (<=): ZF = 1 OR CF = 1
+localparam CTRL_JG  = 4'b1111; // Greater Than          (>):  CF = 0 AND ZF = 0
 
 
 //******************************************************************************
