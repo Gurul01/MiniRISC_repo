@@ -152,9 +152,7 @@ debug_module debug_module(
 reg [15:0] prg_mem [255:0];
 
 initial begin
-    prg_mem[0] = 16'hCB01; // MOV R11 1
-    prg_mem[1] = 16'hF1DB; // LD  R1  R11
-    prg_mem[2] = 16'hCC02; // MOV R12 2
+    $readmemb("src/program_output.txt", prg_mem, 0);
 end
 
 always @(posedge clk)
@@ -210,10 +208,7 @@ dma_controller #(
 reg  [7:0] data_mem [127:0];
 
 initial begin
-   data_mem[1]   = 8'hD3;
-   data_mem[2]   = 8'h78;
-   data_mem[3]   = 8'hD3;
-   data_mem[127] = 8'hCC;
+   $readmemb("src/data_output.txt", data_mem, 0);
 end
 
 wire [6:0] data_mem_addr  = mst2slv_addr[6:0];
