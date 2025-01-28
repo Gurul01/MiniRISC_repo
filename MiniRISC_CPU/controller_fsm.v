@@ -245,12 +245,12 @@ begin
 
 
          STATE_STACK_OP: if(stack_op_end)
-                              if(flag_ie && irq)
-                                 state <= STATE_INT_REQ;
-                              else if(ctrl_op == CTRL_JSR)
+                              if(ctrl_op == CTRL_JSR)
                                  state <= STATE_EX_CTRL;
                               else if((ctrl_op == CTRL_RTS) || (ctrl_op == CTRL_RTI))
                                  state <= STATE_EX_CTRL_NO_DATA;
+                              else // Ha a fentiek nem igazak, akkor egy interrupt altal kerultunk ebbe az allapotba
+                                 state <= STATE_INT_REQ;
                          else
                               state <= STATE_STACK_OP;
                             
